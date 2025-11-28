@@ -2,55 +2,215 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>495 Final – Project Page</title>
-    <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8" />
+  <title>495 Final – Mihir Ballari, Sunghoo Jung</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Basic SEO / social (you can tweak later) -->
+  <meta name="description" content="Project page for the 495 Final by Mihir Ballari and Sunghoo Jung." />
+  <meta property="og:title" content="495 Final – Project Page" />
+  <meta property="og:description" content="Project page for the 495 Final by Mihir Ballari and Sunghoo Jung." />
+  <meta property="og:type" content="website" />
+
+  <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
-    <main class="container">
+  <div class="page">
 
-        <!-- Title -->
-        <section class="header">
-            <h1>495 Final</h1>
-            <p class="authors">Mihir Ballari &middot; Sunghoo Jung</p>
-            <p class="affiliation">Rutgers University</p>
+    <!-- HEADER / TITLE BLOCK -->
+    <header class="hero">
+      <div class="hero-main">
+        <h1 class="title">PAPER_TITLE – AUTHOR_NAMES</h1>
 
-            <div class="button-row">
-                <a class="btn" href="https://github.com/mihirballari/495-final-fall-25" target="_blank">GitHub Repo</a>
-            </div>
-        </section>
+        <p class="authors">
+          <span class="author">Mihir Ballari</span>,
+          <span class="author">Sunghoo Jung</span>
+        </p>
 
-        <!-- Abstract -->
-        <section class="section">
-            <h2>Abstract</h2>
-            <p>
-                This project page will host the final report, results, and presentation video for our
-                495 Final project. Additional content will be added as development progresses.
-            </p>
-        </section>
+        <p class="meta">
+          Rutgers University • 495 Final Project (Fall 2025)
+        </p>
 
-        <!-- Placeholder for resources -->
-        <section class="section">
-            <h2>Resources</h2>
-            <ul>
-                <li> Report (coming soon)</li>
-                <li> 15-minute talk video (coming soon)</li>
-            </ul>
-        </section>
+        <div class="badge-row">
+          <span class="badge">Project Page</span>
+        </div>
 
-        <!-- Comments -->
-        <section class="section">
-            <h2>Comments & Feedback</h2>
-            <p>
-                Questions or suggestions?  
-                Email us at
-                <a href="mailto:mihirballari@gmail.com">mihirb912@gmail.com</a>.
-            </p>
-        </section>
+        <div class="link-row">
+          <!-- You will replace these hrefs once you have the real links -->
+          <a class="btn primary" href="report/project-report.pdf" target="_blank">Paper (PDF)</a>
+          <a class="btn" href="https://github.com/mihirballari/495-final-fall-25" target="_blank">Code</a>
+          <a class="btn" href="#video">Video</a>
+          <a class="btn" href="#poster">Supplementary</a>
+        </div>
+      </div>
+    </header>
 
-    </main>
+    <!-- ABSTRACT -->
+    <section class="section" id="abstract">
+      <h2>Abstract</h2>
+      <p>
+        This is the placeholder abstract for the 495 final project. As we work on
+        the project, this section will describe the problem we address, our
+        methodology, and the main results. For now it simply reserves the spot
+        in the layout so we can focus on getting the website structure ready.
+      </p>
+    </section>
+
+    <!-- MAIN FIGURES (like the “result images” in the template) -->
+    <section class="section" id="results">
+      <h2>Results Preview</h2>
+      <p>
+        This section can be used to highlight key visual results from the
+        project. Swap the placeholder boxes below with real images once you
+        have them.
+      </p>
+
+      <div class="grid">
+        <div class="card placeholder">
+          <div class="placeholder-box">Figure 1</div>
+          <p class="caption">First result description.</p>
+        </div>
+        <div class="card placeholder">
+          <div class="placeholder-box">Figure 2</div>
+          <p class="caption">Second result description.</p>
+        </div>
+        <div class="card placeholder">
+          <div class="placeholder-box">Figure 3</div>
+          <p class="caption">Third result description.</p>
+        </div>
+        <div class="card placeholder">
+          <div class="placeholder-box">Figure 4</div>
+          <p class="caption">Fourth result description.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIDEO PRESENTATION -->
+    <section class="section" id="video">
+      <h2>Video Presentation</h2>
+      <p>
+        This section will host the 15-minute project talk once it is recorded.
+        If you upload the video to YouTube, you can embed it directly here.
+      </p>
+
+      <!-- Replace this iframe src with your real YouTube link later -->
+      <div class="video-wrapper">
+        <div class="video-placeholder">
+          Video embed placeholder
+        </div>
+      </div>
+    </section>
+
+    <!-- ANOTHER CAROUSEL / EXTRA MEDIA (OPTIONAL) -->
+    <section class="section" id="extra-media">
+      <h2>Additional Visualizations</h2>
+      <p>
+        Use this space for extra figures, animations, or demos. You can turn
+        this into a simple carousel, grid, or leave it minimal.
+      </p>
+      <div class="grid">
+        <div class="card placeholder">
+          <div class="placeholder-box small">Extra 1</div>
+        </div>
+        <div class="card placeholder">
+          <div class="placeholder-box small">Extra 2</div>
+        </div>
+        <div class="card placeholder">
+          <div class="placeholder-box small">Extra 3</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- POSTER -->
+    <section class="section" id="poster">
+      <h2>Poster</h2>
+      <p>
+        If your project includes a poster, you can embed a PDF viewer or add a
+        direct download link here.
+      </p>
+      <ul>
+        <li>📄 <em>Poster PDF</em> (link coming soon)</li>
+      </ul>
+    </section>
+
+    <!-- BIBTEX -->
+    <section class="section" id="bibtex">
+      <h2>BibTeX</h2>
+      <p>
+        Once the report is in a more final state, you can share a citation for
+        others to reference your work. Here is a ready-to-edit BibTeX stub:
+      </p>
+
+      <div class="code-block">
+<pre><code>@misc{ballari_jung_495final_2025,
+  title        = {PAPER_TITLE},
+  author       = {Ballari, Mihir and Jung, Sunghoo},
+  note         = {495 Final Project, Rutgers University},
+  year         = {2025},
+  url          = {https://mihirballari.github.io/495-final-fall-25/}
+}</code></pre>
+      </div>
+    </section>
+
+    <!-- MORE WORKS SECTION -->
+    <section class="section" id="more-works">
+      <h2>More Works</h2>
+      <p>
+        This part of the template is handy if you want to link to related
+        projects, courses, or future work.
+      </p>
+
+      <div class="more-works-row">
+        <a class="more-card" href="#" target="_blank">
+          <div class="more-title">Project 1</div>
+          <div class="more-desc">Short description of a related or earlier project.</div>
+          <div class="more-meta">2024</div>
+        </a>
+
+        <a class="more-card" href="#" target="_blank">
+          <div class="more-title">Project 2</div>
+          <div class="more-desc">Another work you want to highlight.</div>
+          <div class="more-meta">2023</div>
+        </a>
+
+        <a class="more-card" href="#" target="_blank">
+          <div class="more-title">Project 3</div>
+          <div class="more-desc">Placeholder for future work.</div>
+          <div class="more-meta">2025</div>
+        </a>
+      </div>
+    </section>
+
+    <!-- COMMENTS / FEEDBACK -->
+    <section class="section" id="comments">
+      <h2>Comments &amp; Feedback</h2>
+      <p>
+        We welcome feedback, questions, or suggestions about the project.
+        You can reach us via email:
+      </p>
+      <ul>
+        <li><a href="mailto:mihirb912@gmail.com">mihirb912@gmail.com</a></li>
+      </ul>
+      <p>
+        If you later want public comments, you can embed a GitHub-based system
+        (like Giscus or Utterances) here.
+      </p>
+    </section>
+
+    <!-- FOOTER / ATTRIBUTION -->
+    <footer class="footer">
+      <p>
+        Built for the 495 Final (Fall 2025) by Mihir Ballari and Sunghoo Jung.
+      </p>
+      <p class="tiny">
+        Layout inspired by the
+        <a href="https://github.com/eliahuhorwitz/Academic-project-page-template" target="_blank">
+          Academic Project Page Template
+        </a>.
+      </p>
+    </footer>
+
+  </div>
 </body>
 </html>
 
