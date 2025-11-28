@@ -1,33 +1,42 @@
 
-/* Global layout */
+/* ==== Base / Layout =================================================== */
+
 * {
   box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  background: #f5f5f7;
-  color: #111827;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
+  background:
+    radial-gradient(circle at 0% 0%, #1d4ed8 0, #020617 50%),
+    #020617;
+  color: #0f172a;
 }
 
 .page {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 32px 16px 48px;
+  max-width: 1000px;
+  margin: 40px auto;
+  padding: 32px 24px 48px;
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.28);
 }
 
-/* Hero / header */
+/* ==== Hero / Header =================================================== */
+
 .hero {
-  padding: 32px 0 24px;
+  padding-bottom: 20px;
   border-bottom: 1px solid #e5e7eb;
-  margin-bottom: 32px;
+  margin-bottom: 28px;
 }
 
 .title {
-  font-size: 2.4rem;
-  margin: 0 0 8px;
+  font-size: 2.6rem;
+  line-height: 1.1;
+  margin: 0 0 10px;
+  letter-spacing: 0.03em;
 }
 
 .authors {
@@ -35,60 +44,62 @@ body {
   font-size: 1.05rem;
 }
 
-.author + .author::before {
-  content: ", ";
-}
-
 .meta {
-  margin: 0 0 8px;
+  margin: 0;
   color: #6b7280;
-  font-size: 0.95rem;
+  font-size: 0.96rem;
 }
 
 .badge-row {
-  margin: 8px 0 16px;
+  margin: 12px 0 16px;
 }
 
 .badge {
   display: inline-block;
   padding: 4px 10px;
   border-radius: 999px;
-  background: #e5e7eb;
-  font-size: 0.8rem;
+  background: #e0ebff;
+  font-size: 0.78rem;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #374151;
+  letter-spacing: 0.08em;
+  color: #1d4ed8;
 }
 
-/* Buttons / links row */
+/* ==== Buttons / Link Row ============================================= */
+
 .link-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
+  margin-top: 8px;
 }
 
 .btn {
   display: inline-block;
-  padding: 8px 14px;
+  padding: 8px 15px;
   border-radius: 999px;
   border: 1px solid #d1d5db;
-  background: white;
+  background: #ffffff;
   font-size: 0.95rem;
   text-decoration: none;
   color: #111827;
-  transition: background 0.15s ease, border-color 0.15s ease,
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
     transform 0.05s ease;
 }
 
 .btn.primary {
   background: #2563eb;
   border-color: #2563eb;
-  color: white;
+  color: #f9fafb;
 }
 
 .btn:hover {
   background: #f3f4f6;
   border-color: #9ca3af;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
   transform: translateY(-1px);
 }
 
@@ -96,36 +107,40 @@ body {
   background: #1d4ed8;
 }
 
-/* Sections */
+/* ==== Sections ======================================================== */
+
 .section {
-  margin-bottom: 40px;
+  margin-bottom: 36px;
 }
 
 .section h2 {
   font-size: 1.6rem;
-  margin-bottom: 8px;
-  border-bottom: 2px solid #e5e7eb;
+  margin: 0 0 8px;
   padding-bottom: 4px;
+  border-bottom: 2px solid #e5e7eb;
 }
 
 .section p {
-  line-height: 1.6;
-  margin-top: 0.5rem;
+  line-height: 1.7;
+  margin-top: 4px;
+  color: #111827;
 }
 
-/* Grid / cards for figures */
+/* ==== Result Grid / Cards ============================================ */
+
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 16px;
-  margin-top: 16px;
+  margin-top: 14px;
 }
 
 .card {
-  background: white;
-  border-radius: 12px;
+  background: #ffffff;
+  border-radius: 14px;
   padding: 12px;
   border: 1px solid #e5e7eb;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
 }
 
 .placeholder-box {
@@ -141,7 +156,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #6b7280;
+  color: #4b5563;
   font-weight: 500;
   margin-bottom: 8px;
 }
@@ -155,15 +170,16 @@ body {
   color: #4b5563;
 }
 
-/* Video embed placeholder */
+/* ==== Video Section =================================================== */
+
 .video-wrapper {
   margin-top: 16px;
 }
 
 .video-placeholder {
-  background: #111827;
+  background: #020617;
   color: #e5e7eb;
-  border-radius: 12px;
+  border-radius: 14px;
   height: 260px;
   display: flex;
   align-items: center;
@@ -171,12 +187,13 @@ body {
   font-weight: 500;
 }
 
-/* Code block (BibTeX) */
+/* ==== Code Block (BibTeX) ============================================ */
+
 .code-block {
-  margin-top: 12px;
-  background: #111827;
+  margin-top: 10px;
+  background: #020617;
   color: #e5e7eb;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 12px 14px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     "Liberation Mono", "Courier New", monospace;
@@ -184,28 +201,33 @@ body {
   overflow-x: auto;
 }
 
-/* More works section */
+/* ==== More Works ===================================================== */
+
 .more-works-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 12px;
-  margin-top: 16px;
+  gap: 14px;
+  margin-top: 14px;
 }
 
 .more-card {
   display: block;
   padding: 12px;
-  border-radius: 12px;
-  background: white;
+  border-radius: 14px;
+  background: #ffffff;
   border: 1px solid #e5e7eb;
   text-decoration: none;
   color: #111827;
-  transition: box-shadow 0.15s ease, transform 0.05s ease;
+  transition:
+    box-shadow 0.15s ease,
+    transform 0.05s ease,
+    border-color 0.15s ease;
 }
 
 .more-card:hover {
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1);
   transform: translateY(-2px);
+  border-color: #cbd5f5;
 }
 
 .more-title {
@@ -216,54 +238,10 @@ body {
 .more-desc {
   font-size: 0.9rem;
   color: #4b5563;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .more-meta {
   font-size: 0.8rem;
-  color: #6b7280;
-}
-
-/* Footer */
-.footer {
-  border-top: 1px solid #e5e7eb;
-  padding-top: 16px;
-  margin-top: 24px;
-  font-size: 0.85rem;
-  color: #6b7280;
-}
-
-.footer a {
-  color: #2563eb;
-  text-decoration: none;
-}
-
-.footer a:hover {
-  text-decoration: underline;
-}
-
-.footer .tiny {
-  margin-top: 4px;
-}
-
-/* Responsive tweaks */
-@media (max-width: 640px) {
-  .title {
-    font-size: 2rem;
-  }
-
-  .page {
-    padding: 24px 14px 32px;
-  }
-
-  .link-row {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .btn {
-    width: 100%;
-    text-align: center;
-  }
-}
+  c
 
