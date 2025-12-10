@@ -197,6 +197,57 @@ a {
   padding: 8px 0 0;
 }
 
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status-row .truncate {
+  max-width: 70%;
+  text-align: right;
+}
+
+.preview-frame video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+
+.preview-placeholder {
+  word-break: break-word;
+}
+
+.artifacts-box {
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.artifacts-title {
+  margin: 0 0 6px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.artifacts-list {
+  margin: 0;
+  padding-left: 18px;
+  color: #334155;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+}
+
+.artifacts-list li {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
 .minimal-form {
   display: flex;
   flex-direction: column;
@@ -222,6 +273,18 @@ a {
   gap: 6px;
   color: #0f172a;
   font-weight: 500;
+}
+
+.file-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.file-label input[type="file"] {
+  font-weight: 400;
 }
 
 .textarea.subtle {
@@ -311,6 +374,8 @@ a {
   font-family: "SFMono-Regular", ui-monospace, SFMono-Regular, Menlo, Monaco,
     Consolas, "Liberation Mono", "Courier New", monospace;
   font-size: 13px;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .empty-state {
