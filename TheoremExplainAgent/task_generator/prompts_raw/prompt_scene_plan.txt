@@ -1,18 +1,25 @@
-You are an expert in educational video production, instructional design, and {topic}. Please design a high-quality video to provide in-depth explanation on {topic}.
+You are an expert in educational video production, instructional design, and {topic}, specifically specializing in the **3Blue1Brown (Grant Sanderson) style** of mathematical exposition. Please design a high-quality video to provide an in-depth, intuitive explanation on {topic}.
 
 **Video Overview:**
 
 Topic: {topic}
 Description: {description}
 
+<3B1B_PHILOSOPHY>
+**The Essence of the Style:**
+1.  **Intuition First:** The goal is not just to prove a theorem, but to make the viewer feel *why* it must be true.
+2.  **Geometry over Algebra:** Whenever possible, translate algebraic concepts into geometric shapes (areas, lines, graphs) to make them visible.
+3.  **Discovery Narrative:** Scenes should feel like a guided discovery, starting with a concrete question or puzzle and building toward the general theorem.
+</3B1B_PHILOSOPHY>
+
 **Scene Breakdown:**
 
 Plan individual scenes. For each scene please provide the following:
 
-*   **Scene Title:** Short, descriptive title (2-5 words).
-*   **Scene Purpose:** Learning objective of this scene. How does it connect to previous scenes?
-*   **Scene Description:** Detailed description of scene content.
-*   **Scene Layout:** Detailedly describe the spatial layout concept. Consider safe area margins and minimum spacing between objects.
+* **Scene Title:** Short, descriptive title (2-5 words).
+* **Scene Purpose:** Learning objective of this scene. What is the "Aha!" moment or intuitive step? How does it connect to previous scenes?
+* **Scene Description:** Detailed description of scene content. **Crucially, specify the visual intuition and how concepts will morph/transform into one another (e.g., "The equation transforms into a graph").**
+* **Scene Layout:** Detailedly describe the spatial layout concept. **Prioritize standard 3B1B layouts (e.g., Split Screen: Equation Left/Geometry Right, or Centered Focus).** Consider safe area margins and minimum spacing between objects.
 
 Please generate the scene plan for the video in the following format:
 
@@ -20,8 +27,8 @@ Please generate the scene plan for the video in the following format:
 <SCENE_OUTLINE>
     <SCENE_1>
     Scene Title: [Title]
-    Scene Purpose: [Learning objective, connection to previous scene]
-    Scene Description: [Brief content description]
+    Scene Purpose: [Learning objective, intuitive goal, connection to previous scene]
+    Scene Description: [Brief content description focusing on visual flow and morphing]
     Scene Layout: [Spatial layout concept, consider safe area and spacing]
     </SCENE_1>
 
@@ -30,14 +37,13 @@ Please generate the scene plan for the video in the following format:
     </SCENE_2>
 ...
 </SCENE_OUTLINE>
-```
 
 **Spatial Constraints:**
 *   **Safe area margins:** 0.5 units on all sides from the scene edges. *All objects must be positioned within these margins.*
 *   **Minimum spacing:** 0.3 units between any two Manim objects (measured edge to edge). *Ensure adequate spacing to prevent overlaps and maintain visual clarity.*
 
 Requirements:
-1. Scenes must build progressively, starting from foundational concepts and advancing to more complex ideas to ensure a logical flow of understanding for the viewer. Each scene should naturally follow from the previous one, creating a cohesive learning narrative. Start with simpler scene layouts and progressively increase complexity in later scenes.
+1. Scenes must build progressively, starting from concrete examples or visual intuitions and advancing to more complex ideas to ensure a logical flow of understanding for the viewer. Each scene should naturally follow from the previous one, creating a cohesive learning narrative. Start with simpler scene layouts and progressively increase complexity in later scenes.
 2. The total number of scenes should be between 3 and 7.
 3. Learning objectives should be distributed evenly across the scenes.
 4. The total video duration must be under 15 minutes.

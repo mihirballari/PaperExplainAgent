@@ -135,7 +135,9 @@ class VideoPlanner:
     def generate_scene_outline(self,
                             topic: str,
                             description: str,
-                            session_id: str) -> str:
+                            session_id: str,
+                            source_material: Optional[str] = None,
+                            image_manifest: Optional[str] = None) -> str:
         """Generate a scene outline based on the topic and description.
 
         Args:
@@ -152,7 +154,7 @@ class VideoPlanner:
             self.rag_integration.set_relevant_plugins(self.relevant_plugins)
             print(f"Detected relevant plugins: {self.relevant_plugins}")
 
-        prompt = get_prompt_scene_plan(topic, description)
+        prompt = get_prompt_scene_plan(topic, description, source_material=source_material, image_manifest=image_manifest)
         
         if self.use_context_learning and self.scene_plan_examples:
             prompt += f"\n\nHere are some example scene plans for reference:\n{self.scene_plan_examples}"
@@ -177,7 +179,16 @@ class VideoPlanner:
 
         return scene_outline
 
-    async def _generate_scene_implementation_single(self, topic: str, description: str, scene_outline_i: str, i: int, file_prefix: str, session_id: str, scene_trace_id: str) -> str:
+    async def _generate_scene_implementation_single(self,
+                                                    topic: str,
+                                                    description: str,
+                                                    scene_outline_i: str,
+                                                    i: int,
+                                                    file_prefix: str,
+                                                    session_id: str,
+                                                    scene_trace_id: str,
+                                                    source_material: Optional[str] = None,
+                                                    image_manifest: Optional[str] = None) -> str:
         """Generate implementation plan for a single scene.
 
         Args:
@@ -207,7 +218,15 @@ class VideoPlanner:
 
         # ===== Step 1: Generate Scene Vision and Storyboard =====
         # ===================================================
-        prompt_vision_storyboard = get_prompt_scene_vision_storyboard(i, topic, description, scene_outline_i, self.relevant_plugins)
+        prompt_vision_storyboard = get_prompt_scene_vision_storyboard(
+            i,
+            topic,
+            description,
+            scene_outline_i,
+            self.relevant_plugins,
+            source_material=source_material,
+            image_manifest=image_manifest
+        )
 
         # Add vision storyboard examples only for this stage if available
         if self.use_context_learning and self.vision_storyboard_examples:
@@ -253,7 +272,16 @@ class VideoPlanner:
 
         # ===== Step 2: Generate Technical Implementation Plan =====
         # =========================================================
-        prompt_technical_implementation = get_prompt_scene_technical_implementation(i, topic, description, scene_outline_i, vision_storyboard_plan, self.relevant_plugins)
+        prompt_technical_implementation = get_prompt_scene_technical_implementation(
+            i,
+            topic,
+            description,
+            scene_outline_i,
+            vision_storyboard_plan,
+            self.relevant_plugins,
+            source_material=source_material,
+            image_manifest=image_manifest
+        )
 
         # Add technical implementation examples only for this stage if available
         if self.use_context_learning and self.technical_implementation_examples:
@@ -299,7 +327,17 @@ class VideoPlanner:
        
         # ===== Step 3: Generate Animation and Narration Plan =====
         # =========================================================
-        prompt_animation_narration = get_prompt_scene_animation_narration(i, topic, description, scene_outline_i, vision_storyboard_plan, technical_implementation_plan, self.relevant_plugins)
+        prompt_animation_narration = get_prompt_scene_animation_narration(
+            i,
+            topic,
+            description,
+            scene_outline_i,
+            vision_storyboard_plan,
+            technical_implementation_plan,
+            self.relevant_plugins,
+            source_material=source_material,
+            image_manifest=image_manifest
+        )
         
         # Add animation narration examples only for this stage if available
         if self.use_context_learning and self.animation_narration_examples:

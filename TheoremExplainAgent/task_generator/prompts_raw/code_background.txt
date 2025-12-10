@@ -1,2 +1,2 @@
-PLEASE DO NOT create another color background Rectangles. Default background (Black) is enough.
-PLEASE DO NOT use BLACK color for any text.
+1. ALWAYS set the background color to the 3b1b Dark Grey: "#1e1e1e". NEVER use default black.
+2. PLEASE DO NOT use BLACK color for any text.

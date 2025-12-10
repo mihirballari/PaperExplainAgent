@@ -9,8 +9,21 @@ The animation should focus on:
 * Providing an intuitive example – Instead of proving the theorem, show a concrete example or transformation that visually supports understanding.
 * Separately, provide a written explanation of the theorem as text that can be displayed outside the animation.
 
-Ensure that:
+**CRITICAL STYLE INSTRUCTIONS (3b1b Style):**
+1. **Background:** ALWAYS start your construct method with `config.background_color = "#1e1e1e"`. NEVER use the default black.
+2. **Colors:** USE ONLY these pastel hex codes. Do NOT use standard colors (like Color.RED or Color.BLUE).
+   - BLUE = "#58C4DD"
+   - TEAL = "#5CD0B3"
+   - GREEN = "#83C167"
+   - YELLOW = "#FFFF00"
+   - RED = "#FC6255"
+   - MAROON = "#94424F"
+   - PURPLE = "#9A72AC"
+   - GREY = "#888888"
+3. **Fonts:** For all `Text` objects, ALWAYS use `font="CMU Serif"` (or "Computer Modern").
+4. **Animation:** Prefer `ReplacementTransform` over simple `FadeIn` to show logical connections.
 
+Ensure that:
 * The animation is concise.
 * The Manim code is compatible with the latest version of community manim.
 * The visual elements are clear and enhance understanding.
