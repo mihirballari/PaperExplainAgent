@@ -137,10 +137,12 @@ async def create_job(
     use_rag: bool = Form(False),
     model: str = Form("gemini/gemini-3-pro-preview"),
     helper_model: str = Form("gemini/gemini-3-pro-preview"),
-    api_key: str = Form(""),
+    api_key: str = Form(...),
 ):
     if pdf.content_type not in {"application/pdf"}:
         raise HTTPException(status_code=400, detail="Only PDF uploads are supported.")
+    if not api_key.strip():
+        raise HTTPException(status_code=400, detail="GEMINI_API_KEY is required.")
 
     job_id = str(uuid.uuid4())
     upload_path = UPLOAD_DIR / f"{job_id}.pdf"

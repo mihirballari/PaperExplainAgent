@@ -113,6 +113,13 @@ function App() {
       appendLog("Missing PDF file.");
       return;
     }
+    const trimmedKey = apiKey.trim();
+    if (!trimmedKey) {
+      setStatus("error");
+      setStatusMessage("API key required.");
+      appendLog("Missing API key.");
+      return;
+    }
 
     clearPollTimeout();
     setClientLogs([]);
@@ -128,9 +135,7 @@ function App() {
 
     const payload = new FormData();
     payload.append("pdf", pdfFile);
-    if (apiKey.trim()) {
-      payload.append("api_key", apiKey.trim());
-    }
+    payload.append("api_key", trimmedKey);
 
     fetch("/api/generate", {
       method: "POST",
