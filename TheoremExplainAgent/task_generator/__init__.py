@@ -23,9 +23,32 @@ from .prompts_raw import (
     _prompt_rag_query_generation_narration,
     _prompt_rag_query_generation_fix_error
 )
-from typing import Union, List
+from typing import Union, List, Optional
+
+def _append_reference_context(prompt: str,
+                              source_material: Optional[str] = None,
+                              image_manifest: Optional[str] = None) -> str:
+    """
+    Append extracted PDF context to an existing prompt.
+
+    Args:
+        prompt (str): Base prompt text.
+        source_material (Optional[str]): Truncated text extracted from the PDF.
+        image_manifest (Optional[str]): Human-readable list of extracted figures.
+
+    Returns:
+        str: Prompt augmented with reference context blocks when provided.
+    """
+    sections = []
+    if source_material:
+        sections.append(f"<REFERENCE_MATERIAL>\n{source_material}\n</REFERENCE_MATERIAL>")
+    if image_manifest:
+        sections.append(f"<EXTRACTED_IMAGES>\n{image_manifest}\n</EXTRACTED_IMAGES>")
+    if sections:
+        prompt = f"{prompt}\n\n" + "\n".join(sections)
+    return prompt
   
-def get_prompt_scene_plan(topic: str, description: str) -> str:
+def get_prompt_scene_plan(topic: str, description: str, source_material: Optional[str] = None, image_manifest: Optional[str] = None) -> str:
     """
     Generate a prompt for scene planning based on the given parameters.
 
@@ -37,9 +60,9 @@ def get_prompt_scene_plan(topic: str, description: str) -> str:
         str: The formatted prompt for scene planning.
     """
     prompt = _prompt_scene_plan.format(topic=topic, description=description)
-    return prompt
+    return _append_reference_context(prompt, source_material, image_manifest)
 
-def get_prompt_scene_vision_storyboard(scene_number: int, topic: str, description: str, scene_outline: str, relevant_plugins: List[str]) -> str:
+def get_prompt_scene_vision_storyboard(scene_number: int, topic: str, description: str, scene_outline: str, relevant_plugins: List[str], source_material: Optional[str] = None, image_manifest: Optional[str] = None) -> str:
     prompt = _prompt_scene_vision_storyboard.format(
         scene_number=scene_number,
         topic=topic,
@@ -47,9 +70,9 @@ def get_prompt_scene_vision_storyboard(scene_number: int, topic: str, descriptio
         scene_outline=scene_outline,
         relevant_plugins=", ".join(relevant_plugins)
     )
-    return prompt
+    return _append_reference_context(prompt, source_material, image_manifest)
 
-def get_prompt_scene_technical_implementation(scene_number: int, topic: str, description: str, scene_outline: str, scene_vision_storyboard: str, relevant_plugins: List[str], additional_context: Union[str, List[str]] = None) -> str:
+def get_prompt_scene_technical_implementation(scene_number: int, topic: str, description: str, scene_outline: str, scene_vision_storyboard: str, relevant_plugins: List[str], additional_context: Union[str, List[str]] = None, source_material: Optional[str] = None, image_manifest: Optional[str] = None) -> str:
     prompt = _prompt_scene_technical_implementation.format(
         scene_number=scene_number,
         topic=topic,
@@ -65,9 +88,9 @@ def get_prompt_scene_technical_implementation(scene_number: int, topic: str, des
             prompt += f"\nAdditional context: {additional_context[0]}"
             if len(additional_context) > 1:
                 prompt += f"\n" + "\n".join(additional_context[1:])
-    return prompt
+    return _append_reference_context(prompt, source_material, image_manifest)
 
-def get_prompt_scene_animation_narration(scene_number: int, topic: str, description: str, scene_outline: str, scene_vision_storyboard: str, technical_implementation_plan: str, relevant_plugins: List[str]) -> str:
+def get_prompt_scene_animation_narration(scene_number: int, topic: str, description: str, scene_outline: str, scene_vision_storyboard: str, technical_implementation_plan: str, relevant_plugins: List[str], source_material: Optional[str] = None, image_manifest: Optional[str] = None) -> str:
     prompt = _prompt_scene_animation_narration.format(
         scene_number=scene_number,
         topic=topic,
@@ -77,7 +100,7 @@ def get_prompt_scene_animation_narration(scene_number: int, topic: str, descript
         technical_implementation_plan=technical_implementation_plan,
         relevant_plugins=", ".join(relevant_plugins)
     )
-    return prompt
+    return _append_reference_context(prompt, source_material, image_manifest)
 
 def get_prompt_code_generation(topic: str,
                                description: str,

@@ -1,23 +1,17 @@
-MUST include the following color definitions if you use the colors in your code. ONLY USE THE COLORS BELOW.
+MUST include the following color definitions if you use the colors in your code. ONLY USE THE COLORS BELOW. These are the specific 3b1b pastel tones.
 
 WHITE = '#FFFFFF'
-RED = '#FF0000'
-GREEN = '#00FF00'
-BLUE = '#0000FF'
-YELLOW = '#FFFF00'
-CYAN = '#00FFFF'
-MAGENTA = '#FF00FF'
-ORANGE = '#FFA500'
-PURPLE = '#800080'
-PINK = '#FFC0CB'
-BROWN = '#A52A2A'
-GRAY = '#808080'
-TEAL = '#008080'
-NAVY = '#000080'
-OLIVE = '#808000'
-MAROON = '#800000'
-LIME = '#00FF00'
-AQUA = '#00FFFF'
-FUCHSIA = '#FF00FF'
-SILVER = '#C0C0C0'
-GOLD = '#FFD700'
+# 3b1b Standard Palette (Pastels)
+BLUE = '#58C4DD'    # The iconic 3b1b Blue (Manim BLUE_C)
+TEAL = '#5CD0B3'    # The iconic 3b1b Teal (Manim TEAL_C)
+GREEN = '#83C167'   # Softer Green (Manim GREEN_C)
+YELLOW = '#FFFF00'  # Manim YELLOW_C
+GOLD = '#F9A602'    # Manim GOLD_C
+RED = '#FC6255'     # Salmon/Coral Red (Manim RED_C)
+MAROON = '#94424F'  # Manim MAROON_C
+PURPLE = '#9A72AC'  # Manim PURPLE_C
+PINK = '#D147BD'    # Manim PINK
+ORANGE = '#FF862F'  # Manim ORANGE
+GRAY = '#888888'    # Manim GREY_C
+BROWN = '#8B4513'   # Standard Brown (Manim doesn't have a strict "C" brown, this is safe)
+BLACK = '#000000'   # Standard Black

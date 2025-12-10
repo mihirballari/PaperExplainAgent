@@ -18,6 +18,7 @@ from mllm_tools.utils import _prepare_text_inputs # Keep _prepare_text_inputs if
 from src.core.video_planner import VideoPlanner
 from src.core.code_generator import CodeGenerator
 from src.core.video_renderer import VideoRenderer
+from src.core.pdf_to_md import pdf_to_markdown
 from src.utils.utils import _print_response, _extract_code, extract_xml # Import utility functions
 from src.config.config import Config # Import Config class
 
@@ -35,6 +36,100 @@ with open(allowed_models_path, 'r') as f:
     allowed_models = json.load(f).get("allowed_models", [])
 
 load_dotenv(override=True)
+
+MAX_DESCRIPTION_WORDS = 120
+MAX_REFERENCE_CHARS = 5000
+MAX_IMAGE_REFERENCES = 8
+
+def _sanitize_prefix(value: str) -> str:
+    return re.sub(r'[^a-z0-9_]+', '_', value.lower())
+
+def _normalize_whitespace(text: str) -> str:
+    return re.sub(r'\s+', ' ', text).strip()
+
+def _extract_markdown_heading(markdown_text: str) -> Optional[str]:
+    match = re.search(r'^#\s+(.+)', markdown_text, re.MULTILINE)
+    if match:
+        return match.group(1).strip()
+    return None
+
+def _extract_section(markdown_text: str, heading: str) -> Optional[str]:
+    pattern = re.compile(rf"^##\s+{re.escape(heading)}\s*(.*?)(?=^\s*##\s|\Z)", re.IGNORECASE | re.MULTILINE | re.DOTALL)
+    match = pattern.search(markdown_text)
+    if match:
+        return match.group(1).strip()
+    return None
+
+def _build_summary(markdown_text: str) -> str:
+    abstract = _extract_section(markdown_text, "Abstract")
+    if not abstract:
+        paragraphs = [p.strip() for p in markdown_text.split("\n\n") if p.strip()]
+        abstract = "\n\n".join(paragraphs[:2]) if paragraphs else ""
+    normalized = _normalize_whitespace(abstract) if abstract else ""
+    words = normalized.split()
+    if not words:
+        return "Summary unavailable from source document."
+    if len(words) > MAX_DESCRIPTION_WORDS:
+        normalized = " ".join(words[:MAX_DESCRIPTION_WORDS]) + "..."
+    return normalized
+
+def _build_reference_excerpt(markdown_text: str, max_chars: int = MAX_REFERENCE_CHARS) -> str:
+    stripped = markdown_text.strip()
+    if len(stripped) <= max_chars:
+        return stripped
+    return stripped[:max_chars] + "\n..."
+
+def _build_image_manifest(image_paths: List[str], base_dir: Optional[str], max_items: int = MAX_IMAGE_REFERENCES) -> str:
+    if not image_paths or not base_dir:
+        return "No figures were extracted from the PDF."
+    lines = []
+    for idx, img_path in enumerate(image_paths[:max_items], 1):
+        rel_path = os.path.relpath(img_path, start=base_dir)
+        lines.append(f"{idx}. {rel_path}")
+    if len(image_paths) > max_items:
+        relative_dir = os.path.relpath(base_dir, start=os.getcwd())
+        lines.append(f"... {len(image_paths) - max_items} more saved in {relative_dir}")
+    return "\n".join(lines)
+
+def ingest_pdf_document(pdf_path: str, output_root: str) -> Dict[str, str]:
+    """
+    Parse a PDF with Marker, returning topic metadata and reference context.
+    """
+    base_name = os.path.splitext(os.path.basename(pdf_path))[0]
+    pdf_prefix = _sanitize_prefix(base_name)
+    pdf_assets_dir = os.path.join(output_root, "pdf_ingest", pdf_prefix)
+    os.makedirs(pdf_assets_dir, exist_ok=True)
+
+    pdf_artifacts = pdf_to_markdown(pdf_path, output_dir=pdf_assets_dir)
+    if not pdf_artifacts:
+        raise FileNotFoundError(f"Unable to parse PDF at {pdf_path}")
+
+    markdown_text = pdf_artifacts.get("markdown_text", "")
+    metadata = pdf_artifacts.get("metadata") or {}
+
+    title_from_metadata = metadata.get("title") if isinstance(metadata, dict) else None
+    title_from_heading = _extract_markdown_heading(markdown_text)
+    topic = title_from_metadata or title_from_heading or base_name.replace('_', ' ').strip().title()
+
+    summary = _build_summary(markdown_text)
+    reference_excerpt = _build_reference_excerpt(markdown_text)
+    image_manifest = _build_image_manifest(pdf_artifacts.get("image_paths", []), pdf_artifacts.get("images_dir"))
+
+    document_context = (
+        f"Paper title: {topic}\n"
+        f"Summary: {summary}\n\n"
+        f"Key excerpt (truncated):\n{reference_excerpt}\n\n"
+        f"Extracted figures:\n{image_manifest}\n\n"
+        f"Source markdown saved at: {pdf_artifacts.get('markdown_path')}"
+    )
+
+    return {
+        "topic": topic,
+        "description": summary,
+        "source_material": reference_excerpt,
+        "image_manifest": image_manifest,
+        "document_context": document_context
+    }
 
 class VideoGenerator:
     """
@@ -194,7 +289,9 @@ class VideoGenerator:
     def generate_scene_outline(self,
                             topic: str,
                             description: str,
-                            session_id: str) -> str:
+                            session_id: str,
+                            source_material: Optional[str] = None,
+                            image_manifest: Optional[str] = None) -> str:
         """
         Generate scene outline using VideoPlanner.
 
@@ -206,7 +303,13 @@ class VideoGenerator:
         Returns:
             str: Generated scene outline
         """
-        return self.planner.generate_scene_outline(topic, description, session_id)
+        return self.planner.generate_scene_outline(
+            topic,
+            description,
+            session_id,
+            source_material=source_material,
+            image_manifest=image_manifest
+        )
 
     async def generate_scene_implementation(self,
                                       topic: str,
@@ -291,10 +394,11 @@ class VideoGenerator:
     async def render_video_fix_code(self,
                               topic: str,
                               description: str,
-                              scene_outline: str,
-                              implementation_plans: List,
-                              max_retries=3,
-                              session_id: str = None) -> None:
+                              scene_outline: Optional[str] = None,
+                              implementation_plans: Optional[List] = None,
+                              max_retries: int = 3,
+                              session_id: Optional[str] = None,
+                              document_context: Optional[str] = None) -> None:
         """
         Render the video for all scenes with code fixing capability.
 
@@ -308,6 +412,25 @@ class VideoGenerator:
         """
         file_prefix = topic.lower()
         file_prefix = re.sub(r'[^a-z0-9_]+', '_', file_prefix)
+
+        # Load scene outline from disk if not provided
+        if scene_outline is None:
+            scene_outline_path = os.path.join(self.output_dir, file_prefix, f"{file_prefix}_scene_outline.txt")
+            if not os.path.exists(scene_outline_path):
+                raise FileNotFoundError(f"Scene outline not found for topic '{topic}'. Expected at {scene_outline_path}")
+            with open(scene_outline_path, "r") as f:
+                scene_outline = f.read()
+
+        # Load implementation plans if not provided
+        if implementation_plans is None:
+            implementation_plans_dict = self.load_implementation_plans(topic)
+            if not implementation_plans_dict:
+                raise ValueError(f"No implementation plans found for topic '{topic}'.")
+            sorted_scene_numbers = sorted(implementation_plans_dict.keys())
+            implementation_plans = [implementation_plans_dict[i] for i in sorted_scene_numbers]
+            if any(plan is None for plan in implementation_plans):
+                missing = [idx + 1 for idx, plan in enumerate(implementation_plans) if plan is None]
+                raise ValueError(f"Missing implementation plans for scenes {missing} in topic '{topic}'.")
 
         # Create tasks for each scene
         tasks = []
@@ -326,13 +449,34 @@ class VideoGenerator:
                 with open(scene_trace_id_path, 'w') as f:
                     f.write(scene_trace_id)
 
-            task = self.process_scene(i, scene_outline, implementation_plan, topic, description, max_retries, file_prefix, session_id, scene_trace_id)
+            task = self.process_scene(
+                i,
+                scene_outline,
+                implementation_plan,
+                topic,
+                description,
+                max_retries,
+                file_prefix,
+                session_id,
+                scene_trace_id,
+                document_context=document_context
+            )
             tasks.append(task)
 
         # Execute all tasks concurrently
         await asyncio.gather(*tasks)
 
-    async def process_scene(self, i: int, scene_outline: str, scene_implementation: str, topic: str, description: str, max_retries: int, file_prefix: str, session_id: str, scene_trace_id: str): # added scene_trace_id
+    async def process_scene(self,
+                            i: int,
+                            scene_outline: str,
+                            scene_implementation: str,
+                            topic: str,
+                            description: str,
+                            max_retries: int,
+                            file_prefix: str,
+                            session_id: str,
+                            scene_trace_id: str,
+                            document_context: Optional[str] = None): # added scene_trace_id
         """
         Process a single scene using CodeGenerator and VideoRenderer.
 
@@ -359,13 +503,17 @@ class VideoGenerator:
 
         async with self.scene_semaphore:
             # Step 3A: Generate initial manim code
+            additional_context = [_prompt_manim_cheatsheet, _code_font_size, _code_limit, _code_disable]
+            if document_context:
+                additional_context.append(document_context)
+
             code, log = self.code_generator.generate_manim_code(
                 topic=topic,
                 description=description,
                 scene_outline=scene_outline,
                 scene_implementation=scene_implementation,
                 scene_number=curr_scene,
-                additional_context=[_prompt_manim_cheatsheet, _code_font_size, _code_limit, _code_disable],
+                additional_context=additional_context,
                 scene_trace_id=scene_trace_id, # Use passed scene_trace_id
                 session_id=session_id,
                 rag_queries_cache=rag_queries_cache  # Pass the cache
@@ -457,7 +605,16 @@ class VideoGenerator:
         """
         self.video_renderer.combine_videos(topic)
 
-    async def _generate_scene_implementation_single(self, topic: str, description: str, scene_outline_i: str, i: int, file_prefix: str, session_id: str, scene_trace_id: str) -> str:
+    async def _generate_scene_implementation_single(self,
+                                                    topic: str,
+                                                    description: str,
+                                                    scene_outline_i: str,
+                                                    i: int,
+                                                    file_prefix: str,
+                                                    session_id: str,
+                                                    scene_trace_id: str,
+                                                    source_material: Optional[str] = None,
+                                                    image_manifest: Optional[str] = None) -> str:
         """
         Generate detailed implementation plan for a single scene using VideoPlanner.
 
@@ -473,9 +630,27 @@ class VideoGenerator:
         Returns:
             str: Generated implementation plan
         """
-        return await self.planner._generate_scene_implementation_single(topic, description, scene_outline_i, i, file_prefix, session_id, scene_trace_id)
+        return await self.planner._generate_scene_implementation_single(
+            topic,
+            description,
+            scene_outline_i,
+            i,
+            file_prefix,
+            session_id,
+            scene_trace_id,
+            source_material=source_material,
+            image_manifest=image_manifest
+        )
 
-    async def generate_video_pipeline(self, topic: str, description: str, max_retries: int, only_plan: bool = False, specific_scenes: List[int] = None):
+    async def generate_video_pipeline(self,
+                                      topic: str,
+                                      description: str,
+                                      max_retries: int,
+                                      only_plan: bool = False,
+                                      specific_scenes: List[int] = None,
+                                      source_material: Optional[str] = None,
+                                      image_manifest: Optional[str] = None,
+                                      document_context: Optional[str] = None):
         """
         Modified pipeline to handle partial scene completions and option to only generate plans for specific scenes.
 
@@ -504,7 +679,13 @@ class VideoGenerator:
                 print(f"Detected relevant plugins: {self.planner.relevant_plugins}")
         else:
             print(f"Generating new scene outline for topic: {topic}")
-            scene_outline = self.planner.generate_scene_outline(topic, description, session_id)
+            scene_outline = self.planner.generate_scene_outline(
+                topic,
+                description,
+                session_id,
+                source_material=source_material,
+                image_manifest=image_manifest
+            )
             os.makedirs(os.path.join(self.output_dir, file_prefix), exist_ok=True)
             with open(scene_outline_path, "w") as f:
                 f.write(scene_outline)
@@ -531,7 +712,16 @@ class VideoGenerator:
                     scene_outline_i = scene_match.group(1)
                     scene_trace_id = str(uuid.uuid4())
                     implementation_plan = await self._generate_scene_implementation_single(
-                        topic, description, scene_outline_i, scene_num, file_prefix, session_id, scene_trace_id)
+                        topic,
+                        description,
+                        scene_outline_i,
+                        scene_num,
+                        file_prefix,
+                        session_id,
+                        scene_trace_id,
+                        source_material=source_material,
+                        image_manifest=image_manifest
+                    )
                     implementation_plans_dict[scene_num] = implementation_plan
 
         if only_plan:
@@ -578,8 +768,15 @@ class VideoGenerator:
             scene_plans.sort(key=lambda x: x[0])
             # Extract just the plans in the correct order
             filtered_implementation_plans = [plan for _, plan in scene_plans]
-            await self.render_video_fix_code(topic, description, scene_outline, filtered_implementation_plans,
-                                           max_retries=max_retries, session_id=session_id)
+            await self.render_video_fix_code(
+                topic,
+                description,
+                scene_outline=scene_outline,
+                implementation_plans=filtered_implementation_plans,
+                max_retries=max_retries,
+                session_id=session_id,
+                document_context=document_context
+            )
         
         if not args.only_render:  # Skip video combination in only_render mode
             print(f"Video rendering completed for topic '{topic}'.")
@@ -670,6 +867,7 @@ if __name__ == "__main__":
                       default='gemini/gemini-1.5-pro-002', help='Select the AI model to use')
     parser.add_argument('--topic', type=str, default=None, help='Topic to generate videos for')
     parser.add_argument('--context', type=str, default=None, help='Context of the topic')
+    parser.add_argument('--pdf_path', type=str, default=None, help='Path to a PDF to ingest as source material')
     parser.add_argument('--helper_model', type=str, choices=allowed_models,
                       default=None, help='Select the helper model to use')
     parser.add_argument('--only_gen_vid', action='store_true', help='Only generate videos to existing plans')
@@ -706,6 +904,16 @@ if __name__ == "__main__":
     parser.add_argument('--scenes', nargs='+', type=int, help='Specific scenes to process (if theorems_path is provided)')
     args = parser.parse_args()
 
+    if args.pdf_path and args.theorems_path:
+        print("Please provide either --pdf_path or --theorems_path, not both.")
+        exit()
+    if args.pdf_path and (args.topic or args.context):
+        print("Please use --pdf_path without --topic/--context. The topic will be inferred from the PDF.")
+        exit()
+    if not args.pdf_path and not args.theorems_path and not (args.topic and args.context):
+        print("Please provide one of (--pdf_path), (--theorems_path), or (--topic and --context).")
+        exit()
+
     # Initialize planner model using LiteLLM
     if args.verbose:
         verbose = True
@@ -734,6 +942,28 @@ if __name__ == "__main__":
     )
     print(f"Planner model: {args.model}, Helper model: {args.helper_model if args.helper_model else args.model}, Scene model: {args.model}") # Print all models
 
+    def init_video_generator():
+        return VideoGenerator(
+            planner_model=planner_model,
+            scene_model=scene_model,
+            helper_model=helper_model,
+            output_dir=args.output_dir,
+            verbose=args.verbose,
+            use_rag=args.use_rag,
+            use_context_learning=args.use_context_learning,
+            context_learning_path=args.context_learning_path,
+            chroma_db_path=args.chroma_db_path,
+            manim_docs_path=args.manim_docs_path,
+            embedding_model=args.embedding_model,
+            use_visual_fix_code=args.use_visual_fix_code,
+            use_langfuse=args.use_langfuse,
+            max_scene_concurrency=args.max_scene_concurrency
+        )
+
+
+    if args.pdf_path and not os.path.exists(args.pdf_path):
+        print(f"Provided PDF path '{args.pdf_path}' does not exist.")
+        exit()
 
     if args.theorems_path:
         # Load the sample theorems
@@ -768,22 +998,7 @@ if __name__ == "__main__":
             print(f"Number of successful rendered scenes: {successful_rendered_videos}/{total_scenes}")
             exit()
 
-        video_generator = VideoGenerator(
-            planner_model=planner_model,
-            scene_model=scene_model, # Pass scene_model
-            helper_model=helper_model, # Pass helper_model
-            output_dir=args.output_dir,
-            verbose=args.verbose,
-            use_rag=args.use_rag,
-            use_context_learning=args.use_context_learning,
-            context_learning_path=args.context_learning_path,
-            chroma_db_path=args.chroma_db_path,
-            manim_docs_path=args.manim_docs_path,
-            embedding_model=args.embedding_model,
-            use_visual_fix_code=args.use_visual_fix_code,
-            use_langfuse=args.use_langfuse,
-            max_scene_concurrency=args.max_scene_concurrency
-        )
+        video_generator = init_video_generator()
 
         if args.debug_combine_topic is not None:
             video_generator.combine_videos(args.debug_combine_topic)
@@ -809,22 +1024,7 @@ if __name__ == "__main__":
 
         elif args.check_status:
             print("\nChecking theorem status...")
-            video_generator = VideoGenerator(
-                planner_model=planner_model,
-                scene_model=scene_model,
-                helper_model=helper_model,
-                output_dir=args.output_dir,
-                verbose=args.verbose,
-                use_rag=args.use_rag,
-                use_context_learning=args.use_context_learning,
-                context_learning_path=args.context_learning_path,
-                chroma_db_path=args.chroma_db_path,
-                manim_docs_path=args.manim_docs_path,
-                embedding_model=args.embedding_model,
-                use_visual_fix_code=args.use_visual_fix_code,
-                use_langfuse=args.use_langfuse,
-                max_scene_concurrency=args.max_scene_concurrency
-            )
+            video_generator = init_video_generator()
             
             all_statuses = [video_generator.check_theorem_status(theorem) for theorem in theorems]
             
@@ -914,23 +1114,39 @@ if __name__ == "__main__":
 
             asyncio.run(main())
 
+    elif args.pdf_path:
+        video_generator = init_video_generator()
+        print(f"Processing PDF: {args.pdf_path}")
+        pdf_context = ingest_pdf_document(args.pdf_path, args.output_dir)
+        topic = pdf_context["topic"]
+        description = pdf_context["description"]
+
+        if args.only_gen_vid:
+            asyncio.run(video_generator.render_video_fix_code(
+                topic,
+                description,
+                max_retries=args.max_retries,
+                document_context=pdf_context["document_context"]
+            ))
+            exit()
+
+        if args.only_combine:
+            video_generator.combine_videos(topic)
+        else:
+            asyncio.run(video_generator.generate_video_pipeline(
+                topic,
+                description,
+                max_retries=args.max_retries,
+                only_plan=args.only_plan,
+                source_material=pdf_context["source_material"],
+                image_manifest=pdf_context["image_manifest"],
+                document_context=pdf_context["document_context"]
+            ))
+            if not args.only_plan and not args.only_render:
+                video_generator.combine_videos(topic)
+
     elif args.topic and args.context:
-        video_generator = VideoGenerator(
-            planner_model=planner_model,
-            scene_model=scene_model, # Pass scene_model
-            helper_model=helper_model, # Pass helper_model
-            output_dir=args.output_dir,
-            verbose=args.verbose,
-            use_rag=args.use_rag,
-            use_context_learning=args.use_context_learning,
-            context_learning_path=args.context_learning_path,
-            chroma_db_path=args.chroma_db_path,
-            manim_docs_path=args.manim_docs_path,
-            embedding_model=args.embedding_model,
-            use_visual_fix_code=args.use_visual_fix_code,
-            use_langfuse=args.use_langfuse,
-            max_scene_concurrency=args.max_scene_concurrency
-        )
+        video_generator = init_video_generator()
         # Process single topic with context
         print(f"Processing topic: {args.topic}")
 
