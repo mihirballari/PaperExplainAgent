@@ -1,5 +1,7 @@
 import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
+const API_BASE = import.meta.env.VITE_API_BASE || "";
+
 type Status = "idle" | "running" | "error" | "done";
 
 const statusColors: Record<Status, string> = {
@@ -39,7 +41,7 @@ function App() {
 
   const schedulePoll = (id: string) => {
     const poll = () => {
-      fetch(`/api/status/${id}`)
+      fetch(`${API_BASE}/api/status/${id}`)
         .then((res) => {
           if (!res.ok) {
             throw new Error("Failed to fetch job status.");
@@ -137,7 +139,7 @@ function App() {
     payload.append("pdf", pdfFile);
     payload.append("api_key", trimmedKey);
 
-    fetch("/api/generate", {
+    fetch(`${API_BASE}/api/generate`, {
       method: "POST",
       body: payload,
     })
