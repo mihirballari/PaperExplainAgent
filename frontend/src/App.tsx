@@ -1,7 +1,6 @@
 import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
-//const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
-const API_BASE = "http://localhost:8000"
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
 type Status = "idle" | "running" | "error" | "done";
 
@@ -42,12 +41,11 @@ function App() {
 
   const schedulePoll = (id: string) => {
     const poll = () => {
-    //fetch(`${API_BASE}/api/status/${id}`, {
-    //  headers: {
-    //    "ngrok-skip-browser-warning": "true",
-    //  },
-    //})
-    fetch(`${API_BASE}/api/status/${id}`)
+    fetch(`${API_BASE}/api/status/${id}`, {
+      headers: {
+        "ngrok-skip-browser-warning": "true",
+      },
+    })
         .then((res) => {
           if (!res.ok) {
             throw new Error("Failed to fetch job status.");
@@ -147,9 +145,9 @@ function App() {
 
     fetch(`${API_BASE}/api/generate`, {
       method: "POST",
-      //headers: {
-      //  "ngrok-skip-browser-warning": "true",
-      //},
+      headers: {
+        "ngrok-skip-browser-warning": "true",
+      },
       body: payload,
     })
       .then((res) => {
