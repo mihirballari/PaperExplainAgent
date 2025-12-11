@@ -220,6 +220,16 @@
                     </a>
                   </span>
 
+                  <span class="link-block">
+                    <a href="https://math-495-final-a5d936bb1f71.herokuapp.com/#" target="_blank" rel="noopener"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fas fa-play-circle"></i>
+                    </span>
+                    <span>Demo</span>
+                  </a>
+                </span>
+
                   <!-- TODO: Replace with your GitHub repository URL -->
                   <span class="link-block">
                     <a href="https://github.com/mihirballari/495-final-fall-25" target="_blank"
@@ -236,6 +246,39 @@
               </span>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Live demo preview pane -->
+<section class="section hero is-light">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-12">
+        <div class="box preview-pane">
+          <div class="preview-pane__header">
+            <div>
+              <p class="preview-pane__eyebrow">Live demo</p>
+              <h2 class="title is-3">PaperExplainAgent</h2>
+              <p class="preview-pane__description">Preview the PaperExplainAgent experience and launch the hosted app in a new tab.</p>
+            </div>
+            <div class="preview-pane__actions">
+              <a href="https://math-495-final-a5d936bb1f71.herokuapp.com/#" target="_blank" rel="noopener"
+                 class="button is-dark">
+                <span class="icon"><i class="fas fa-external-link-alt"></i></span>
+                <span>Open demo</span>
+              </a>
+            </div>
+          </div>
+          <a class="preview-pane__frame" href="https://math-495-final-a5d936bb1f71.herokuapp.com/#" target="_blank" rel="noopener" aria-label="Open the PaperExplainAgent demo">
+            <iframe src="https://math-495-final-a5d936bb1f71.herokuapp.com/#" loading="lazy" title="PaperExplainAgent live preview"></iframe>
+            <div class="preview-pane__frame-overlay">
+              <span class="preview-pane__frame-text">Click to open the full experience</span>
+            </div>
+          </a>
         </div>
       </div>
     </div>
@@ -392,9 +435,90 @@
           </iframe>
         
       </div>
-    </div>
-  </section>
+  </div>
+</section>
 <!--End paper poster -->
+
+<!-- Comments & Feedback -->
+<section class="section hero is-light" id="comments">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-10">
+        <div class="box comment-box">
+          <div class="comment-box__header">
+            <div>
+              <h3 class="title is-4">Comments &amp; Feedback</h3>
+              <p class="subtitle is-6 has-text-grey">Share your thoughts publicly or send us a private note.</p>
+            </div>
+          </div>
+          <form id="commentForm" data-mail-to="mihirballari@gmail.com,sunghoojungg@gmail.com">
+            <div class="columns is-multiline">
+              <div class="column is-half">
+                <div class="field">
+                  <label class="label">Name</label>
+                  <div class="control">
+                    <input class="input" type="text" name="name" placeholder="Optional">
+                  </div>
+                </div>
+              </div>
+              <div class="column is-half">
+                <div class="field">
+                  <label class="label">Email</label>
+                  <div class="control">
+                    <input class="input" type="email" name="email" placeholder="Optional">
+                  </div>
+                </div>
+              </div>
+              <div class="column is-full">
+                <div class="field">
+                  <label class="label">Comment</label>
+                  <div class="control">
+                    <textarea class="textarea" name="comment" rows="3" placeholder="What would you like to share?"></textarea>
+                  </div>
+                </div>
+              </div>
+              <div class="column is-full">
+                <div class="field">
+                  <label class="label">Share as</label>
+                  <div class="control">
+                    <label class="radio mr-4">
+                      <input type="radio" name="commentMode" value="public" checked>
+                      Public comment (appears below)
+                    </label>
+                    <label class="radio">
+                      <input type="radio" name="commentMode" value="email">
+                      Send privately via email
+                    </label>
+                  </div>
+                  <p class="help">Email option opens your mail app with a pre-filled message.</p>
+                </div>
+              </div>
+              <div class="column is-full">
+                <div class="field is-grouped is-align-items-center">
+                  <div class="control">
+                    <button class="button is-dark" type="submit">
+                      <span class="icon"><i class="fas fa-paper-plane"></i></span>
+                      <span>Share feedback</span>
+                    </button>
+                  </div>
+                  <p id="commentStatus" class="help is-hidden"></p>
+                </div>
+              </div>
+            </div>
+          </form>
+          <div class="comment-box__list">
+            <div class="comment-box__list-header">
+              <p class="has-text-weight-semibold">Public comments</p>
+              <p class="is-size-7 has-text-grey">Stored locally in your browser.</p>
+            </div>
+            <div id="publicComments" class="comment-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- End comments & Feedback -->
 
 
   <footer class="footer">
