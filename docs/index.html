@@ -312,8 +312,15 @@
         <h2 class="title is-3">Abstract</h2>
         <div class="content has-text-justified">
           <!-- TODO: Replace with your paper abstract -->
-          <p>PaperExplainAgent is an interactive reading assistant for STEM textbooks, lecture notes, and research papers. Load a PDF, highlight a definition, theorem, figure, or paragraph, and ask questions in plain language. The system responds with layered explanations—starting from high-level intuition and concrete examples, then moving into more technical detail as needed—while always staying grounded in the original passage you selected.</p>
-          <p>PaperExplainAgent is designed to make dense material in mathematics, computer science, physics, engineering, and related fields easier to digest. It can unpack symbols and notation, clarify assumptions, compare similar concepts, and outline the structure of an argument or derivation step by step. As the project develops, we plan to add richer workflows such as saving explanation “threads,” generating study notes, and integrating with common reference managers and note-taking tools.</p>
+          <p>PaperExplainAgent is an interactive reading assistant designed to help researchers and students make sense of dense STEM papers. Given a PDF, the system responds with simple
+visual or animation-style sketches that could be rendered with tools like Manim. To build
+this behavior, we build on open-source LLMs with prompting and integration strategies tailored to dense mathematical texts. Our design is motivated by work in cognitive science and
+math education showing that well-aligned diagrams and dynamic visualizations can reduce
+cognitive load and improve conceptual understanding, especially for symbol-heavy material.
+Research suggests that structured, visually grounded responses are preferred to generic textonly explanations and are perceived as clearer and more helpful for understanding unfamiliar
+results. We conclude by discussing limitations of our current prototype and outlining how
+tighter integration between interactive reading tools and visualization backends could further
+support mathematical and STEM researc.</p>
         </div>
       </div>
     </div>
