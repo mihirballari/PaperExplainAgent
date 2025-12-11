@@ -76,9 +76,6 @@
   <!-- TODO: Replace with your paper title and authors -->
   <title>PaperExplainAgent</title>
   
-  <!-- Favicon and App Icons -->
-  <link rel="icon" type="image/x-icon" href="static/images/favicon.ico">
-  <link rel="apple-touch-icon" href="static/images/favicon.ico">
   
   <!-- Critical CSS - Load synchronously -->
   <link rel="stylesheet" href="static/css/bulma.min.css">
@@ -211,7 +208,7 @@
                          <!-- TODO: Update with your arXiv paper ID -->
                     <!-- TODO: Add your supplementary material PDF or remove this section -->
                     <span class="link-block">
-                      <a href="static/pdfs/sample.pdf" target="_blank"
+                      <a href="static/paper.pdf" target="_blank"
                       class="external-link button is-normal is-rounded is-dark">
                       <span class="icon">
                         <i class="fas fa-file-pdf"></i>
@@ -297,7 +294,7 @@
       </video>
       <!-- TODO: Replace with your video description -->
       <h2 class="subtitle has-text-centered">
-        Aliquam vitae elit ullamcorper tellus egestas pellentesque. Ut lacus tellus, maximus vel lectus at, placerat pretium mi. Maecenas dignissim tincidunt vestibulum. Sed consequat hendrerit nisl ut maximus. 
+              Example Video Using PaperExplainAgent
       </h2>
     </div>
   </div>
@@ -312,8 +309,15 @@
         <h2 class="title is-3">Abstract</h2>
         <div class="content has-text-justified">
           <!-- TODO: Replace with your paper abstract -->
-          <p>PaperExplainAgent is an interactive reading assistant for STEM textbooks, lecture notes, and research papers. Load a PDF, highlight a definition, theorem, figure, or paragraph, and ask questions in plain language. The system responds with layered explanations—starting from high-level intuition and concrete examples, then moving into more technical detail as needed—while always staying grounded in the original passage you selected.</p>
-          <p>PaperExplainAgent is designed to make dense material in mathematics, computer science, physics, engineering, and related fields easier to digest. It can unpack symbols and notation, clarify assumptions, compare similar concepts, and outline the structure of an argument or derivation step by step. As the project develops, we plan to add richer workflows such as saving explanation “threads,” generating study notes, and integrating with common reference managers and note-taking tools.</p>
+          <p>PaperExplainAgent is an interactive reading assistant designed to help researchers and students make sense of dense STEM papers. Given a PDF, the system responds with simple
+visual or animation-style sketches that could be rendered with tools like Manim. To build
+this behavior, we build on open-source LLMs with prompting and integration strategies tailored to dense mathematical texts. Our design is motivated by work in cognitive science and
+math education showing that well-aligned diagrams and dynamic visualizations can reduce
+cognitive load and improve conceptual understanding, especially for symbol-heavy material.
+Research suggests that structured, visually grounded responses are preferred to generic textonly explanations and are perceived as clearer and more helpful for understanding unfamiliar
+results. We conclude by discussing limitations of our current prototype and outlining how
+tighter integration between interactive reading tools and visualization backends could further
+support mathematical and STEM researc.</p>
         </div>
       </div>
     </div>
@@ -322,98 +326,11 @@
 <!-- End paper abstract -->
 
 
-<!-- Image carousel -->
-<section class="hero is-small">
-  <div class="hero-body">
-    <div class="container">
-      <div id="results-carousel" class="carousel results-carousel">
-       <div class="item">
-        <!-- TODO: Replace with your research result images -->
-        <img src="static/images/carousel1.jpg" alt="First research result visualization" loading="lazy"/>
-        <!-- TODO: Replace with description of this result -->
-        <h2 class="subtitle has-text-centered">
-          First image description.
-        </h2>
-      </div>
-      <div class="item">
-        <!-- Your image here -->
-        <img src="static/images/carousel2.jpg" alt="Second research result visualization" loading="lazy"/>
-        <h2 class="subtitle has-text-centered">
-          Second image description.
-        </h2>
-      </div>
-      <div class="item">
-        <!-- Your image here -->
-        <img src="static/images/carousel3.jpg" alt="Third research result visualization" loading="lazy"/>
-        <h2 class="subtitle has-text-centered">
-         Third image description.
-       </h2>
-     </div>
-     <div class="item">
-      <!-- Your image here -->
-      <img src="static/images/carousel4.jpg" alt="Fourth research result visualization" loading="lazy"/>
-      <h2 class="subtitle has-text-centered">
-        Fourth image description.
-      </h2>
-    </div>
-  </div>
-</div>
-</div>
-</section>
-<!-- End image carousel -->
-
-<!-- Video carousel -->
-<section class="hero is-small">
-  <div class="hero-body">
-    <div class="container">
-      <h2 class="title is-3">Another Carousel</h2>
-      <div id="results-carousel" class="carousel results-carousel">
-        <div class="item item-video1">
-          <!-- TODO: Add poster image for better preview -->
-          <video poster="" id="video1" controls muted loop height="100%" preload="metadata">
-            <!-- Your video file here -->
-            <source src="static/videos/carousel1.mp4" type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-video2">
-          <!-- TODO: Add poster image for better preview -->
-          <video poster="" id="video2" controls muted loop height="100%" preload="metadata">
-            <!-- Your video file here -->
-            <source src="static/videos/carousel2.mp4" type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-video3">
-          <!-- TODO: Add poster image for better preview -->
-          <video poster="" id="video3" controls muted loop height="100%" preload="metadata">
-            <!-- Your video file here -->
-            <source src="static/videos/carousel3.mp4" type="video/mp4">
-          </video>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-<!-- End video carousel -->
 
 
 
 
 
-
-<!-- Paper poster -->
-<section class="hero is-small is-light">
-  <div class="hero-body">
-    <div class="container">
-      <h2 class="title">Poster</h2>
-
-      <!-- TODO: Replace with your poster PDF -->
-      <iframe  src="static/pdfs/sample.pdf" width="100%" height="700">
-          </iframe>
-        
-      </div>
-  </div>
-</section>
-<!--End paper poster -->
 
 <!-- Comments & Feedback -->
 <section class="section hero is-light" id="comments">
