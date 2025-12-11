@@ -1,6 +1,7 @@
 import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "";
+//const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
+const API_BASE = "http://localhost:8000"
 
 type Status = "idle" | "running" | "error" | "done";
 
@@ -41,7 +42,12 @@ function App() {
 
   const schedulePoll = (id: string) => {
     const poll = () => {
-      fetch(`${API_BASE}/api/status/${id}`)
+    //fetch(`${API_BASE}/api/status/${id}`, {
+    //  headers: {
+    //    "ngrok-skip-browser-warning": "true",
+    //  },
+    //})
+    fetch(`${API_BASE}/api/status/${id}`)
         .then((res) => {
           if (!res.ok) {
             throw new Error("Failed to fetch job status.");
@@ -141,6 +147,9 @@ function App() {
 
     fetch(`${API_BASE}/api/generate`, {
       method: "POST",
+      //headers: {
+      //  "ngrok-skip-browser-warning": "true",
+      //},
       body: payload,
     })
       .then((res) => {
@@ -202,8 +211,14 @@ function App() {
     <div className="app-shell">
       <header className="header-bar">
         <div className="header-inner">
-          <span>495 Final – TheoremExplainAgent Demo</span>
-          <a className="header-link" href="#" aria-label="View project on GitHub">
+          <span>495 Final – PaperExplainAgent Demo</span>
+          <a
+            className="header-link"
+            href="https://github.com/mihirballari/495-final-fall-25"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="View project on GitHub"
+          >
             View project on GitHub
           </a>
         </div>
@@ -212,7 +227,7 @@ function App() {
       <main className="page">
         <div className="max-width">
           <div className="hero">
-            <h1>TheoremExplainAgent Demo</h1>
+            <h1>PaperExplainAgent Demo</h1>
             <p>
               Lightweight viewer + prompt box. Send a request, watch the status,
               and we will render the returned video/thumbnail here once the backend
