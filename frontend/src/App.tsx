@@ -2,6 +2,18 @@ import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "re
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
+const normalizeMediaUrl = (url: string): string => {
+  if (!url) {
+    return "";
+  }
+  if (/^https?:\/\//i.test(url)) {
+    return url;
+  }
+  const base = API_BASE.replace(/\/$/, "");
+  const relativePath = url.startsWith("/") ? url : `/${url}`;
+  return `${base}${relativePath}`;
+};
+
 type Status = "idle" | "running" | "error" | "done";
 
 const statusColors: Record<Status, string> = {
@@ -12,6 +24,7 @@ const statusColors: Record<Status, string> = {
 };
 
 function App() {
+
   const [apiKey, setApiKey] = useState("");
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [status, setStatus] = useState<Status>("idle");
@@ -63,7 +76,7 @@ function App() {
           });
           setArtifacts(latestArtifacts);
           if (data.videoUrl) {
-            setVideoUrl(data.videoUrl);
+            setVideoUrl(normalizeMediaUrl(data.videoUrl));
           }
           const backendStatus = data.status as Status | string;
 
@@ -245,6 +258,16 @@ function App() {
                   <div className="preview-placeholder">{previewMessage}</div>
                 )}
               </div>
+              {videoUrl && (
+                <div className="preview-actions">
+                  <a className="button secondary" href={videoUrl} download target="_blank" rel="noreferrer">
+                    Download video
+                  </a>
+                  <a className="button secondary" href={videoUrl} target="_blank" rel="noreferrer">
+                    Open in new tab
+                  </a>
+                </div>
+              )}
               <div className="status-row">
                 <div className="status">
                   <span className={statusColors[status]} aria-hidden="true" />

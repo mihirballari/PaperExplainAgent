@@ -169,6 +169,21 @@ a {
   box-shadow: none;
 }
 
+.button.secondary {
+  background: #ffffff;
+  color: #1d4ed8;
+  border-color: #cdd9ff;
+}
+
+.button.secondary:hover {
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.12);
+  filter: none;
+}
+
+.button.secondary:active {
+  background: #f8fafc;
+}
+
 .muted {
   color: #475569;
 }
@@ -187,6 +202,13 @@ a {
   border-radius: 10px;
   padding: 12px 14px;
   margin-bottom: 12px;
+}
+
+.preview-actions {
+  margin: 10px 0;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .status-row {
