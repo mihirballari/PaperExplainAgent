@@ -1,6 +1,6 @@
 from typing import Union, List, Dict, Any, Optional
 from PIL import Image
-import google.generativeai as genai
+from google import genai
 import tempfile
 import os
 from .gemini import GeminiWrapper
@@ -129,15 +129,16 @@ def _upload_to_gemini(input, mime_type=None):
 
     See https://ai.google.dev/gemini-api/docs/prompting_with_media
     """
+    client = genai.Client()
     if isinstance(input, str):
         # Input is a file path
-        file = genai.upload_file(input, mime_type=mime_type)
+        file = client.files.upload(file=input, mime_type=mime_type)
     elif isinstance(input, Image.Image):
         # Input is a PIL image
         with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmp_file:
             input.save(tmp_file, format="JPEG")
             tmp_file_path = tmp_file.name
-        file = genai.upload_file(tmp_file_path, mime_type=mime_type or "image/jpeg")
+        file = client.files.upload(file=tmp_file_path, mime_type=mime_type or "image/jpeg")
         os.remove(tmp_file_path)
     else:
         raise ValueError("Unsupported input type. Must be a file path or PIL Image.")

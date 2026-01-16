@@ -4,7 +4,8 @@ import os
 import base64
 from PIL import Image
 import mimetypes
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 import tempfile
 import time
 from urllib.parse import urlparse
@@ -39,25 +40,17 @@ class GeminiWrapper:
         self.accumulated_cost = 0
 
         api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
-        if not api_key:
-            raise ValueError("No API_KEY found. Please set the `GEMINI_API_KEY` or `GOOGLE_API_KEY` environment variable.")
-        genai.configure(api_key=api_key)
+        self.client = genai.Client(api_key=api_key) if api_key else genai.Client()
 
-        generation_config = {
-            "temperature": self.temperature,
-            "top_p": 0.95,
-            "response_mime_type": "text/plain",
-        }
-        safety_settings = [
-            {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
-            {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
-            {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
-            {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
-        ]
-        self.model = genai.GenerativeModel(
-            model_name=self.model_name,
-            safety_settings=safety_settings,
-            generation_config=generation_config,
+        self.generation_config = types.GenerateContentConfig(
+            temperature=self.temperature,
+            top_p=0.95,
+            safety_settings=[
+                types.SafetySetting(category="HARM_CATEGORY_HARASSMENT", threshold="BLOCK_NONE"),
+                types.SafetySetting(category="HARM_CATEGORY_HATE_SPEECH", threshold="BLOCK_NONE"),
+                types.SafetySetting(category="HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold="BLOCK_NONE"),
+                types.SafetySetting(category="HARM_CATEGORY_DANGEROUS_CONTENT", threshold="BLOCK_NONE"),
+            ],
         )
 
     def _get_mime_type(self, file_path: str) -> str:
@@ -120,7 +113,14 @@ class GeminiWrapper:
         Returns:
             Uploaded file object
         """
-        return genai.upload_file(file_path, mime_type=mime_type)
+        return self.client.files.upload(file=file_path, mime_type=mime_type)
+
+    def _get_file_state(self, file_obj) -> Optional[str]:
+        """Safely retrieve the state string from a file upload response."""
+        state = getattr(file_obj, "state", None)
+        if hasattr(state, "name"):
+            return state.name
+        return state
 
     def __call__(self, messages: List[Dict[str, Any]], metadata: Optional[Dict[str, Any]] = None) -> str:
         """
@@ -153,18 +153,23 @@ class GeminiWrapper:
 
                 uploaded_file = self._upload_to_gemini(file_path, mime_type)
 
-                while uploaded_file.state.name == "PROCESSING":
+                while self._get_file_state(uploaded_file) == "PROCESSING":
                     print('.', end='')
                     time.sleep(3)
-                    uploaded_file = genai.get_file(uploaded_file.name)
-                if uploaded_file.state.name == "FAILED":
-                    raise ValueError(uploaded_file.state.name)
+                    uploaded_file = self.client.files.get(name=uploaded_file.name)
+                if self._get_file_state(uploaded_file) == "FAILED":
+                    raise ValueError(self._get_file_state(uploaded_file))
                 print("Upload successfully")
                 contents.append(uploaded_file)
             else:
                 raise ValueError("Unsupported message type")
 
-        response = self.model.generate_content(contents, request_options={"timeout": 600})
+        response = self.client.models.generate_content(
+            model=self.model_name,
+            contents=contents,
+            config=self.generation_config,
+            request_options={"timeout": 600},
+        )
         try:
             return response.text
         except Exception as e:

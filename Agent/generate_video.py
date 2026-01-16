@@ -100,9 +100,29 @@ def ingest_pdf_document(pdf_path: str, output_root: str) -> Dict[str, str]:
     pdf_assets_dir = os.path.join(output_root, "pdf_ingest", pdf_prefix)
     os.makedirs(pdf_assets_dir, exist_ok=True)
 
-    pdf_artifacts = pdf_to_markdown(pdf_path, output_dir=pdf_assets_dir)
-    if not pdf_artifacts:
-        raise FileNotFoundError(f"Unable to parse PDF at {pdf_path}")
+    markdown_path = os.path.join(pdf_assets_dir, f"{base_name}.md")
+    images_dir = os.path.join(pdf_assets_dir, "images")
+
+    pdf_artifacts = None
+    if os.path.exists(markdown_path):
+        print(f"Found existing parsed PDF at {markdown_path}, skipping conversion.")
+        with open(markdown_path, "r", encoding="utf-8") as f:
+            markdown_text = f.read()
+        pdf_artifacts = {
+            "markdown_text": markdown_text,
+            "metadata": {},
+            "markdown_path": markdown_path,
+            "images_dir": images_dir,
+            "image_paths": [
+                os.path.join(images_dir, fname)
+                for fname in sorted(os.listdir(images_dir))
+                if os.path.isfile(os.path.join(images_dir, fname))
+            ] if os.path.isdir(images_dir) else []
+        }
+    else:
+        pdf_artifacts = pdf_to_markdown(pdf_path, output_dir=pdf_assets_dir)
+        if not pdf_artifacts:
+            raise FileNotFoundError(f"Unable to parse PDF at {pdf_path}")
 
     markdown_text = pdf_artifacts.get("markdown_text", "")
     metadata = pdf_artifacts.get("metadata") or {}
@@ -381,10 +401,19 @@ class VideoGenerator:
         # Check each scene's implementation plan
         for i in range(1, scene_number + 1):
             plan_path = os.path.join(self.output_dir, file_prefix, f"scene{i}", f"{file_prefix}_scene{i}_implementation_plan.txt")
+            # Some runs may have saved plans without the file_prefix. Fall back to legacy name.
+            legacy_plan_path = os.path.join(self.output_dir, file_prefix, f"scene{i}", f"scene{i}_implementation_plan.txt")
+
+            selected_plan_path = None
             if os.path.exists(plan_path):
-                with open(plan_path, "r") as f:
+                selected_plan_path = plan_path
+            elif os.path.exists(legacy_plan_path):
+                selected_plan_path = legacy_plan_path
+
+            if selected_plan_path:
+                with open(selected_plan_path, "r") as f:
                     implementation_plans[i] = f.read()
-                print(f"Found existing implementation plan for scene {i}")
+                print(f"Found existing implementation plan for scene {i} at {selected_plan_path}")
             else:
                 implementation_plans[i] = None
                 print(f"Missing implementation plan for scene {i}")
@@ -396,6 +425,7 @@ class VideoGenerator:
                               description: str,
                               scene_outline: Optional[str] = None,
                               implementation_plans: Optional[List] = None,
+                              implementation_plan_scene_numbers: Optional[List[int]] = None,
                               max_retries: int = 3,
                               session_id: Optional[str] = None,
                               document_context: Optional[str] = None) -> None:
@@ -435,8 +465,10 @@ class VideoGenerator:
         # Create tasks for each scene
         tasks = []
         for i, implementation_plan in enumerate(implementation_plans):
+            # Use the real scene number if provided (handles partial reruns)
+            curr_scene_number = implementation_plan_scene_numbers[i] if implementation_plan_scene_numbers else (i + 1)
             # Try to load scene trace id, or generate new one if it doesn't exist
-            scene_dir = os.path.join(self.output_dir, file_prefix, f"scene{i+1}")
+            scene_dir = os.path.join(self.output_dir, file_prefix, f"scene{curr_scene_number}")
             subplan_dir = os.path.join(scene_dir, "subplans")
             os.makedirs(subplan_dir, exist_ok=True)  # Create directories if they don't exist
             
@@ -450,7 +482,7 @@ class VideoGenerator:
                     f.write(scene_trace_id)
 
             task = self.process_scene(
-                i,
+                curr_scene_number - 1,  # keep zero-based for process_scene internals
                 scene_outline,
                 implementation_plan,
                 topic,
@@ -596,14 +628,14 @@ class VideoGenerator:
         """
         return self.video_renderer.create_snapshot_scene(topic, scene_number, version_number, return_type)
 
-    def combine_videos(self, topic: str):
+    def combine_videos(self, topic: str, fast_combine: bool = False):
         """
         Combine all videos and subtitle files for a specific topic using VideoRenderer.
 
         Args:
             topic (str): The topic to combine videos for
         """
-        self.video_renderer.combine_videos(topic)
+        self.video_renderer.combine_videos(topic, fast_combine=fast_combine)
 
     async def _generate_scene_implementation_single(self,
                                                     topic: str,
@@ -768,11 +800,13 @@ class VideoGenerator:
             scene_plans.sort(key=lambda x: x[0])
             # Extract just the plans in the correct order
             filtered_implementation_plans = [plan for _, plan in scene_plans]
+            filtered_scene_numbers = [scene_num for scene_num, _ in scene_plans]
             await self.render_video_fix_code(
                 topic,
                 description,
                 scene_outline=scene_outline,
                 implementation_plans=filtered_implementation_plans,
+                implementation_plan_scene_numbers=filtered_scene_numbers,
                 max_retries=max_retries,
                 session_id=session_id,
                 document_context=document_context
@@ -902,6 +936,7 @@ if __name__ == "__main__":
                        help='Check planning and code status for all theorems')
     parser.add_argument('--only_render', action='store_true', help='Only render scenes without combining videos')
     parser.add_argument('--scenes', nargs='+', type=int, help='Specific scenes to process (if theorems_path is provided)')
+    parser.add_argument('--fast_combine', action='store_true', help='Use fast ffmpeg concat (stream copy) when combining videos')
     args = parser.parse_args()
 
     if args.pdf_path and args.theorems_path:
@@ -1001,7 +1036,7 @@ if __name__ == "__main__":
         video_generator = init_video_generator()
 
         if args.debug_combine_topic is not None:
-            video_generator.combine_videos(args.debug_combine_topic)
+            video_generator.combine_videos(args.debug_combine_topic, fast_combine=args.fast_combine)
             exit()
 
         if args.only_gen_vid:
@@ -1094,7 +1129,7 @@ if __name__ == "__main__":
                     description = theorem['description']
                     print(f"Processing topic: {topic}")
                     if args.only_combine:
-                        video_generator.combine_videos(topic)
+                        video_generator.combine_videos(topic, fast_combine=args.fast_combine)
                     else:
                         await video_generator.generate_video_pipeline(
                             topic, 
@@ -1104,7 +1139,7 @@ if __name__ == "__main__":
                             specific_scenes=args.scenes
                         )
                         if not args.only_plan and not args.only_render:  # Add condition for only_render
-                            video_generator.combine_videos(topic)
+                            video_generator.combine_videos(topic, fast_combine=args.fast_combine)
 
             async def main():
                 # Use the command-line argument for topic concurrency
@@ -1131,7 +1166,7 @@ if __name__ == "__main__":
             exit()
 
         if args.only_combine:
-            video_generator.combine_videos(topic)
+            video_generator.combine_videos(topic, fast_combine=args.fast_combine)
         else:
             asyncio.run(video_generator.generate_video_pipeline(
                 topic,
@@ -1143,7 +1178,7 @@ if __name__ == "__main__":
                 document_context=pdf_context["document_context"]
             ))
             if not args.only_plan and not args.only_render:
-                video_generator.combine_videos(topic)
+                video_generator.combine_videos(topic, fast_combine=args.fast_combine)
 
     elif args.topic and args.context:
         video_generator = init_video_generator()
@@ -1155,7 +1190,7 @@ if __name__ == "__main__":
             exit()
 
         if args.only_combine:
-            video_generator.combine_videos(args.topic)
+            video_generator.combine_videos(args.topic, fast_combine=args.fast_combine)
         else:
             asyncio.run(video_generator.generate_video_pipeline(
                 args.topic,
@@ -1164,7 +1199,7 @@ if __name__ == "__main__":
                 only_plan=args.only_plan,
             ))
             if not args.only_plan and not args.only_render:
-                video_generator.combine_videos(args.topic)
+                video_generator.combine_videos(args.topic, fast_combine=args.fast_combine)
     else:
         print("Please provide either (--theorems_path) or (--topic and --context)")
         exit()

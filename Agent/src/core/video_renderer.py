@@ -200,7 +200,7 @@ class VideoRenderer:
         saved_image = image_with_most_non_black_space(get_images_from_video(video_path), snapshot_path, return_type=return_type)
         return saved_image
 
-    def combine_videos(self, topic: str):
+    def combine_videos(self, topic: str, fast_combine: bool = False):
         """Combine all videos and subtitle files for a specific topic using ffmpeg.
 
         Args:
@@ -271,9 +271,107 @@ class VideoRenderer:
             if not subtitles_found:
                 scene_subtitles.append(None)
 
+        # Attempt fast concat (no re-encode) when we have all scene videos and flag is set
+        combined_success = False
+        if fast_combine and len(scene_videos) == scene_count:
+            concat_list_path = os.path.abspath(os.path.join(video_output_dir, f"{file_prefix}_concat_list.txt"))
+            with open(concat_list_path, "w", encoding="utf-8") as f:
+                for vid in scene_videos:
+                    f.write(f"file '{os.path.abspath(vid)}'\n")
+            print("Attempting fast concat with stream copy (no re-encode)...")
+            try:
+                fast_cmd = [
+                    "ffmpeg",
+                    "-f", "concat",
+                    "-safe", "0",
+                    "-i", concat_list_path,
+                    "-c", "copy",
+                    output_video_path,
+                    "-y"
+                ]
+                result = subprocess.run(fast_cmd, capture_output=True, text=True)
+                if result.returncode == 0:
+                    combined_success = True
+                    print(f"Fast concat succeeded: {output_video_path}")
+                else:
+                    print("Fast concat failed, falling back to re-encode path.")
+                    print(result.stderr)
+            except Exception as e:
+                print(f"Fast concat exception, falling back to re-encode path: {e}")
+            finally:
+                try:
+                    os.remove(concat_list_path)
+                except OSError:
+                    pass
+
         if len(scene_videos) != scene_count:
             print("Not all videos/subtitles are found, aborting video combination.")
             return
+
+        # If fast concat worked, skip re-encode and go directly to subtitles combine
+        if combined_success:
+            try:
+                if scene_subtitles:
+                    with open(output_srt_path, 'w', encoding='utf-8') as outfile:
+                        current_time_offset = 0
+                        subtitle_index = 1
+
+                        for srt_file, video_file in zip(scene_subtitles, scene_videos):
+                            if srt_file is None:
+                                # Update offset using ffprobe even if no subtitles
+                                probe = ffmpeg.probe(video_file)
+                                duration = float(probe['streams'][0]['duration'])
+                                current_time_offset += duration
+                                continue
+
+                            with open(srt_file, 'r', encoding='utf-8') as infile:
+                                lines = infile.readlines()
+                                i = 0
+                                while i < len(lines):
+                                    line = lines[i].strip()
+                                    if line.isdigit():  # Subtitle index
+                                        outfile.write(f"{subtitle_index}\n")
+                                        subtitle_index += 1
+                                        i += 1
+
+                                        # Time codes line
+                                        time_line = lines[i].strip()
+                                        start_time, end_time = time_line.split(' --> ')
+
+                                        # Convert time codes and add offset
+                                        def adjust_time(time_str, offset):
+                                            h, m, s = time_str.replace(',', '.').split(':')
+                                            total_seconds = float(h) * 3600 + float(m) * 60 + float(s) + offset
+                                            h = int(total_seconds // 3600)
+                                            m = int((total_seconds % 3600) // 60)
+                                            s = total_seconds % 60
+                                            return f"{h:02d}:{m:02d}:{s:06.3f}".replace('.', ',')
+
+                                        new_start = adjust_time(start_time, current_time_offset)
+                                        new_end = adjust_time(end_time, current_time_offset)
+                                        outfile.write(f"{new_start} --> {new_end}\n")
+                                        i += 1
+
+                                        # Subtitle text (could be multiple lines)
+                                        while i < len(lines) and lines[i].strip():
+                                            outfile.write(lines[i])
+                                            i += 1
+                                        outfile.write('\n')
+                                    else:
+                                        i += 1
+
+                            # Update time offset using ffprobe
+                            probe = ffmpeg.probe(video_file)
+                            duration = float(probe['streams'][0]['duration'])
+                            current_time_offset += duration
+
+                print(f"Successfully combined videos into {output_video_path}")
+                if scene_subtitles:
+                    print(f"Successfully combined subtitles into {output_srt_path}")
+                return
+            except Exception as e:
+                print(f"Fast concat subtitles combine failed, falling back to re-encode: {e}")
+                # If subtitles combine fails, fall through to re-encode path
 
         try:
             import ffmpeg # You might need to install ffmpeg-python package: pip install ffmpeg-python

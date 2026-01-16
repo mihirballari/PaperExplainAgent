@@ -173,7 +173,7 @@ class VideoPlanner:
         file_prefix = re.sub(r'[^a-z0-9_]+', '_', file_prefix)
         # save plan to file
         os.makedirs(os.path.join(self.output_dir, file_prefix), exist_ok=True) # Ensure directory exists
-        with open(os.path.join(self.output_dir, file_prefix, f"{file_prefix}_scene_outline.txt"), "w") as f:
+        with open(os.path.join(self.output_dir, file_prefix, f"{file_prefix}_scene_outline.txt"), "w", encoding="utf-8") as f:
             f.write(scene_outline)
         print(f"Plan saved to {file_prefix}_scene_outline.txt")
 
@@ -212,7 +212,7 @@ class VideoPlanner:
 
         # Save scene_trace_id to file
         trace_id_file = os.path.join(subplan_dir, "scene_trace_id.txt")
-        with open(trace_id_file, 'w') as f:
+        with open(trace_id_file, 'w', encoding="utf-8") as f:
             f.write(scene_trace_id)
         print(f"Scene trace ID saved to {trace_id_file}")
 
@@ -265,8 +265,8 @@ class VideoPlanner:
         vision_match = re.search(r'(<SCENE_VISION_STORYBOARD_PLAN>.*?</SCENE_VISION_STORYBOARD_PLAN>)', vision_storyboard_plan, re.DOTALL)
         vision_storyboard_plan = vision_match.group(1) if vision_match else vision_storyboard_plan
         implementation_plan += vision_storyboard_plan + "\n\n"
-        file_path_vs = os.path.join(subplan_dir, f"{file_prefix}_scene{i}_vision_storyboard_plan.txt")
-        with open(file_path_vs, "w") as f:
+        file_path_vs = os.path.join(subplan_dir, f"scene{i}_vision_storyboard.txt")
+        with open(file_path_vs, "w", encoding="utf-8") as f:
             f.write(vision_storyboard_plan)
         print(f"Scene {i} Vision and Storyboard Plan saved to {file_path_vs}")
 
@@ -320,8 +320,8 @@ class VideoPlanner:
         technical_match = re.search(r'(<SCENE_TECHNICAL_IMPLEMENTATION_PLAN>.*?</SCENE_TECHNICAL_IMPLEMENTATION_PLAN>)', technical_implementation_plan, re.DOTALL)
         technical_implementation_plan = technical_match.group(1) if technical_match else technical_implementation_plan
         implementation_plan += technical_implementation_plan + "\n\n"
-        file_path_ti = os.path.join(subplan_dir, f"{file_prefix}_scene{i}_technical_implementation_plan.txt")
-        with open(file_path_ti, "w") as f:
+        file_path_ti = os.path.join(subplan_dir, f"scene{i}_tech_implementation.txt")
+        with open(file_path_ti, "w", encoding="utf-8") as f:
             f.write(technical_implementation_plan)
         print(f"Scene {i} Technical Implementation Plan saved to {file_path_ti}")
        
@@ -368,18 +368,19 @@ class VideoPlanner:
         animation_match = re.search(r'(<SCENE_ANIMATION_NARRATION_PLAN>.*?</SCENE_ANIMATION_NARRATION_PLAN>)', animation_narration_plan, re.DOTALL)
         animation_narration_plan = animation_match.group(1) if animation_match else animation_narration_plan
         implementation_plan += animation_narration_plan + "\n\n"
-        file_path_an = os.path.join(subplan_dir, f"{file_prefix}_scene{i}_animation_narration_plan.txt")
-        with open(file_path_an, "w") as f:
+        file_path_an = os.path.join(subplan_dir, f"scene{i}_animation_narration.txt")
+        with open(file_path_an, "w", encoding="utf-8") as f:
             f.write(animation_narration_plan)
         print(f"Scene {i} Animation and Narration Plan saved to {file_path_an}")
 
         # ===== Step 4: Save Implementation Plan =====
         # ==========================================
         # save the overall implementation plan to file
-        with open(os.path.join(self.output_dir, file_prefix, f"scene{i}", f"{file_prefix}_scene{i}_implementation_plan.txt"), "w") as f:
+        impl_path = os.path.join(self.output_dir, file_prefix, f"scene{i}", f"scene{i}_implementation_plan.txt")
+        with open(impl_path, "w", encoding="utf-8") as f:
             f.write(f"# Scene {i} Implementation Plan\n\n")
             f.write(implementation_plan)
-        print(f"Scene {i} Implementation Plan saved to {file_path_ti}")
+        print(f"Scene {i} Implementation Plan saved to {impl_path}")
 
         return implementation_plan
 
