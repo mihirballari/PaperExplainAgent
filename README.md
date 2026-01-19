@@ -1,5 +1,7 @@
 # [PaperExplainAgent](https://mihirballari.github.io/PaperExplainAgent/)
 
+https://www.youtube.com/@PaperExplainAgent
+
 PaperExplainAgent turns a PDF paper into a narrated, Manim-rendered explainer video. The project glues together a simple React UI, a FastAPI job runner, and the TheoremExplainAgent generation pipeline to plan scenes, write Manim code, render clips, and return artifacts back to the browser.
 
 Core idea:
