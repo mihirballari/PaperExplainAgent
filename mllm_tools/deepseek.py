@@ -13,10 +13,10 @@ class DeepSeekWrapper:
     
     def __init__(
         self,
-        model_name: str = "deepseek-reasoner",
+        model_name: str = "deepseek-3.2",
         temperature: float = 1.0, # DeepSeek often recommends higher temp (1.0-1.3) for V3/Coder
         verbose: bool = False,
-        base_url: str = "https://api.deepseek.com/v3.2_speciale_expires_on_20251215",
+        base_url: str = "https://api.deepseek.com",
     ):
         """
         Initialize the DeepSeek wrapper

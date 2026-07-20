@@ -354,19 +354,17 @@ def main():
     for text, video, and image content using specified AI models.
     """
     parser = argparse.ArgumentParser(description='Automatic evaluation of theorem explanation videos with LLMs')
-    parser.add_argument('--model_text', type=str, 
+    parser.add_argument('--model_text', type=str,
                        choices=ALLOWED_MODELS,
-                       default='azure/gpt-4o',
+                       default='gemini/gemini-3-pro-preview',
                        help='Select the AI model to use for text evaluation')
     parser.add_argument('--model_video', type=str,
-                       choices=['gemini/gemini-1.5-pro-002',
-                                'gemini/gemini-2.0-flash-exp',
-                                'gemini/gemini-2.0-pro-exp-02-05'],
-                       default='gemini/gemini-1.5-pro-002',
+                       choices=ALLOWED_MODELS,
+                       default='gemini/gemini-3-pro-preview',
                        help='Select the AI model to use for video evaluation')
     parser.add_argument('--model_image', type=str,
                        choices=ALLOWED_MODELS,
-                       default='azure/gpt-4o',
+                       default='gemini/gemini-3-pro-preview',
                        help='Select the AI model to use for image evaluation')
     parser.add_argument('--eval_type', type=str, choices=['text', 'video', 'image', 'all'], default='all', help='Type of evaluation to perform')
     parser.add_argument('--file_path', type=str, help='Path to a file or a theorem folder', required=True)
