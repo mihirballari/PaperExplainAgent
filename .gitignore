@@ -1,2 +1,4 @@
 .DS_Store
-Agent/output/
+**/__pycache__/
+.env
+output/

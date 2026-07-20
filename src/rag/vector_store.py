@@ -2,10 +2,10 @@ import json
 import os
 from typing import List, Dict
 import uuid
-from langchain.schema import Document
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_core.documents import Document
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import TextLoader
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 from langchain_text_splitters import Language
 from langchain_core.embeddings import Embeddings
 import statistics
@@ -37,7 +37,7 @@ class RAGVectorStore:
     def __init__(self, 
                  chroma_db_path: str = "chroma_db",
                  manim_docs_path: str = "rag/manim_docs",
-                 embedding_model: str = "text-embedding-ada-002",
+                 embedding_model: str = "azure/text-embedding-3-large",
                  trace_id: str = None,
                  session_id: str = None,
                  use_langfuse: bool = True,
@@ -242,7 +242,7 @@ class RAGVectorStore:
             if request_count % 100 == 0:
                 time.sleep(60)  # Sleep for 1 second every 100 requests
         
-        vector_store.persist()
+        # chromadb >=0.4 persists automatically; Chroma.persist() was removed
 
     def find_relevant_docs(self, queries: List[Dict], k: int = 5, trace_id: str = None, topic: str = None, scene_number: int = None) -> List[str]:
         """Finds relevant documentation based on the provided queries.
@@ -261,6 +261,7 @@ class RAGVectorStore:
         manim_plugin_formatted_results = []
         
         # Create a Langfuse span if enabled
+        span = None
         if self.use_langfuse:
             langfuse = Langfuse()
             span = langfuse.span(
@@ -283,7 +284,8 @@ class RAGVectorStore:
         # Search in core manim docs
         for query in manim_core_queries:
             query_text = query["query"]
-            self.core_vector_store._embedding_function.parent_observation_id = span.id
+            if span is not None:
+                self.core_vector_store._embedding_function.parent_observation_id = span.id
             manim_core_results = self.core_vector_store.similarity_search_with_relevance_scores(
                 query=query_text,
                 k=k,
@@ -301,7 +303,8 @@ class RAGVectorStore:
         for query in manim_plugin_queries:
             plugin_name = query["type"]
             query_text = query["query"]
-            self.plugin_stores[plugin_name]._embedding_function.parent_observation_id = span.id
+            if span is not None:
+                self.plugin_stores[plugin_name]._embedding_function.parent_observation_id = span.id
             if plugin_name in self.plugin_stores:
                 plugin_results = self.plugin_stores[plugin_name].similarity_search_with_relevance_scores(
                     query=query_text,

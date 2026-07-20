@@ -17,7 +17,7 @@ class GeminiWrapper:
     
     def __init__(
         self,
-        model_name: str = "gemini-1.5-pro-002",
+        model_name: str = "gemini-3-pro-preview",
         temperature: float = 0.7,
         print_cost: bool = False,
         verbose: bool = False,
@@ -168,7 +168,6 @@ class GeminiWrapper:
             model=self.model_name,
             contents=contents,
             config=self.generation_config,
-            request_options={"timeout": 600},
         )
         try:
             return response.text

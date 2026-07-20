@@ -13,7 +13,7 @@ class VertexAIWrapper:
     
     def __init__(
         self,
-        model_name: str = "gemini-1.5-pro",
+        model_name: str = "gemini-2.0-flash-001",
         temperature: float = 0.7,
         print_cost: bool = False,
         verbose: bool = False,

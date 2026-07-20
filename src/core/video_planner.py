@@ -38,11 +38,11 @@ class VideoPlanner:
         session_id (str): Session identifier. Defaults to None
         chroma_db_path (str): Path to ChromaDB. Defaults to "data/rag/chroma_db"
         manim_docs_path (str): Path to Manim docs. Defaults to "data/rag/manim_docs"
-        embedding_model (str): Name of embedding model. Defaults to "text-embedding-ada-002"
+        embedding_model (str): Name of embedding model. Defaults to "azure/text-embedding-3-large"
         use_langfuse (bool): Whether to use Langfuse logging. Defaults to True
     """
 
-    def __init__(self, planner_model, helper_model=None, output_dir="output", print_response=False, use_context_learning=False, context_learning_path="data/context_learning", use_rag=False, session_id=None, chroma_db_path="data/rag/chroma_db", manim_docs_path="data/rag/manim_docs", embedding_model="text-embedding-ada-002", use_langfuse=True):
+    def __init__(self, planner_model, helper_model=None, output_dir="output", print_response=False, use_context_learning=False, context_learning_path="data/context_learning", use_rag=False, session_id=None, chroma_db_path="data/rag/chroma_db", manim_docs_path="data/rag/manim_docs", embedding_model="azure/text-embedding-3-large", use_langfuse=True):
         self.planner_model = planner_model
         self.helper_model = helper_model if helper_model is not None else planner_model
         self.output_dir = output_dir

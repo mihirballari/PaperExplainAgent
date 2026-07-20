@@ -199,7 +199,7 @@ class VideoGenerator:
                  context_learning_path="data/context_learning",
                  chroma_db_path="data/rag/chroma_db",
                  manim_docs_path="data/rag/manim_docs",
-                 embedding_model="azure/text-embedding-3-large",
+                 embedding_model=Config.EMBEDDING_MODEL,
                  use_visual_fix_code=False,
                  use_langfuse=True,
                  trace_id=None,
@@ -244,7 +244,8 @@ class VideoGenerator:
         self.video_renderer = VideoRenderer(
             output_dir=output_dir,
             print_response=verbose,
-            use_visual_fix_code=use_visual_fix_code
+            use_visual_fix_code=use_visual_fix_code,
+            scene_model=scene_model if scene_model is not None else planner_model
         )
 
     def _load_or_create_session_id(self) -> str:
@@ -898,7 +899,7 @@ class VideoGenerator:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Generate Manim videos using AI')
     parser.add_argument('--model', type=str, choices=allowed_models,
-                      default='gemini/gemini-1.5-pro-002', help='Select the AI model to use')
+                      default='gemini/gemini-3-pro-preview', help='Select the AI model to use')
     parser.add_argument('--topic', type=str, default=None, help='Topic to generate videos for')
     parser.add_argument('--context', type=str, default=None, help='Context of the topic')
     parser.add_argument('--pdf_path', type=str, default=None, help='Path to a PDF to ingest as source material')

@@ -17,17 +17,19 @@ from mllm_tools.gemini import GeminiWrapper
 class VideoRenderer:
     """Class for rendering and combining Manim animation videos."""
 
-    def __init__(self, output_dir="output", print_response=False, use_visual_fix_code=False):
+    def __init__(self, output_dir="output", print_response=False, use_visual_fix_code=False, scene_model=None):
         """Initialize the VideoRenderer.
 
         Args:
             output_dir (str, optional): Directory for output files. Defaults to "output".
             print_response (bool, optional): Whether to print responses. Defaults to False.
             use_visual_fix_code (bool, optional): Whether to use visual fix code. Defaults to False.
+            scene_model: Model used for the scene; its model_name selects the visual-fix media format.
         """
         self.output_dir = output_dir
         self.print_response = print_response
         self.use_visual_fix_code = use_visual_fix_code
+        self.scene_model = scene_model
 
     async def render_scene(self, code: str, file_prefix: str, curr_scene: int, curr_version: int, code_dir: str, media_dir: str, max_retries: int = 3, use_visual_fix_code=False, visual_self_reflection_func=None, banned_reasonings=None, scene_trace_id=None, topic=None, session_id=None):
         """Render a single scene and handle error retries and visual fixes.
@@ -76,7 +78,7 @@ class VideoRenderer:
                     )
                     
                     # For Gemini/Vertex AI models, pass the video directly
-                    if self.scene_model.model_name.startswith(('gemini/', 'vertex_ai/')):
+                    if self.scene_model is not None and self.scene_model.model_name.startswith(('gemini/', 'vertex_ai/')):
                         media_input = video_path
                     else:
                         # For other models, use image snapshot
